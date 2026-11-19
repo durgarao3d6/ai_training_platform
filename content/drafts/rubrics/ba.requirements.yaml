@@ -4,7 +4,7 @@
 # Deliverables: Milestone Catalog section 6.2 (the "seven BA items": six sections in one
 # document plus the process flow). Unique IDs, three or more stakeholders, story and Given/When/Then
 # patterns are checked by the BA checkers (req_id_unique, story_format, gwt_pattern).
-# TODO(role expert): level descriptors 0-4, mandatory gates, bound checks, correction templates.
+# Proposed levels, gates and corrections for role-expert review. Publication requires sign-off.
 rubric_id: ba.requirements
 version: 1
 role_profile: ba
@@ -32,10 +32,75 @@ deliverables:
     required: true
     description: A PNG or PDF export, a draw.io link, or Mermaid text
 criteria:
-  - {id: business_understanding, title: Business understanding, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
-  - {id: requirement_completeness, title: Requirement completeness, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
-  - {id: functional_requirement_clarity, title: Functional requirement clarity, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
-  - {id: non_functional_requirements, title: Non-functional requirements, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
-  - {id: user_story_quality, title: User story quality, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
-  - {id: acceptance_criteria, title: Acceptance criteria, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
-  - {id: documentation_quality, title: Documentation quality, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - id: business_understanding
+    title: Business understanding
+    weight: 15
+    levels:
+      "0": "No problem stated."
+      "1": "Names the portal but gives no reason for it."
+      "2": "Describes the current search problem and an affected group."
+      "3": "Connects the problem to user impact and sets clear scope."
+      "4": "Also identifies assumptions and observable success measures."
+    correction_template: "State who cannot find what, why it matters, and what changes when the portal is introduced."
+  - id: requirement_completeness
+    title: Requirement completeness
+    weight: 20
+    mandatory_min_level: 3
+    levels:
+      "0": "No requirements provided."
+      "1": "Lists disconnected needs without coverage of the requested flow."
+      "2": "Covers policy search and identifies at least one missing or unclear step."
+      "3": "Covers policy search, answers from approved sources, the no-answer path, and support requests."
+      "4": "Also covers failures and traces each requirement to a stakeholder need."
+    correction_template: "Walk through search to either an approved answer or a support request and add missing steps."
+  - id: functional_requirement_clarity
+    title: Functional requirement clarity
+    weight: 20
+    levels:
+      "0": "No functional requirements."
+      "1": "Uses broad statements that a reviewer cannot verify."
+      "2": "Defines some identifiable actors and behaviors but leaves conditions or results ambiguous."
+      "3": "Uses unique IDs and observable behavior with clear conditions and results."
+      "4": "Also resolves edge cases and keeps each requirement independently verifiable."
+    correction_template: "Rewrite broad statements as uniquely identified requirements with an actor, condition and observable result."
+  - id: non_functional_requirements
+    title: Non-functional requirements
+    weight: 15
+    levels:
+      "0": "No non-functional requirements."
+      "1": "Uses unmeasurable terms such as fast or secure."
+      "2": "Names relevant quality concerns and gives one usable target."
+      "3": "Defines measurable targets and how to check the relevant quality concerns."
+      "4": "Also justifies targets and states constraints or tradeoffs."
+    correction_template: "Replace vague adjectives with a target, measurement conditions and a verification method."
+  - id: user_story_quality
+    title: User story quality
+    weight: 10
+    levels:
+      "0": "No user stories."
+      "1": "Lists features without a user goal."
+      "2": "Uses a role and goal, with incomplete benefit or traceability."
+      "3": "Gives role, goal, and benefit and links each story to a requirement."
+      "4": "Also separates distinct goals and includes alternate user paths."
+    correction_template: "Add a role, goal and benefit to each story and link it to its requirement ID."
+  - id: acceptance_criteria
+    title: Acceptance criteria
+    weight: 10
+    mandatory_min_level: 3
+    levels:
+      "0": "No acceptance criteria."
+      "1": "Lists outcomes too vague to verify."
+      "2": "Provides tests for the main path with gaps in conditions or alternate paths."
+      "3": "Uses observable Given/When/Then cases for approved answers and the no-answer support path."
+      "4": "Also covers failure cases and traces cases to their requirement or user story."
+    correction_template: "Add a Given/When/Then case that states what the portal does when there is no approved answer."
+  - id: documentation_quality
+    title: Documentation quality
+    weight: 10
+    levels:
+      "0": "No usable document or process flow."
+      "1": "Provides a fragment that is hard to follow."
+      "2": "Organizes most sections, but IDs or process flow are incomplete."
+      "3": "Uses the requested headings and consistent IDs, with a readable process flow."
+      "4": "Also keeps the flow, acceptance criteria and requirement links consistent throughout."
+    correction_template: "Use the required headings, check IDs, and draw both branches of the policy search flow."
