@@ -60,6 +60,8 @@ export default function CohortDetailPage() {
   // Courses, interns and trainers only fill the dialog dropdowns (and the track chip in the
   // table), so the page never waits for them.
   const optionsPending = (courses.loading && !courses.data) || (interns.loading && !interns.data);
+  const publishedCourses =
+    courses.data?.filter((course) => course.review_status === "approved") ?? [];
   const trainersPending = trainers.loading && !trainers.data;
 
   const data = cohort.data;
@@ -308,12 +310,11 @@ export default function CohortDetailPage() {
                 {(p) => (
                   <select {...p} name="course_id" className={inputClass} required defaultValue="">
                     <option value="" disabled>
-                      Choose a course
+                      {publishedCourses.length ? "Choose a course" : "No published courses available"}
                     </option>
-                    {courses.data?.map((c) => (
+                    {publishedCourses.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.title}
-                        {c.review_status === "approved" ? "" : " (draft)"}
                       </option>
                     ))}
                   </select>
@@ -325,7 +326,11 @@ export default function CohortDetailPage() {
             <Button variant="secondary" onClick={closeEnroll}>
               Cancel
             </Button>
-            <Button type="submit" busy={enrollAction.busy} disabled={optionsPending}>
+            <Button
+              type="submit"
+              busy={enrollAction.busy}
+              disabled={optionsPending || publishedCourses.length === 0}
+            >
               Enroll
             </Button>
           </FormActions>

@@ -148,8 +148,11 @@ def enroll(
     if cohort is None:
         raise ProblemError(status.HTTP_404_NOT_FOUND, "Cohort not found")
     _require_role(db, body.user_id, Role.intern, "intern")
-    if db.get(Course, body.course_id) is None:
+    course = db.get(Course, body.course_id)
+    if course is None:
         raise ProblemError(status.HTTP_422_UNPROCESSABLE_ENTITY, "Choose a course")
+    if course.review_status != "approved":
+        raise ProblemError(status.HTTP_409_CONFLICT, "Publish the course before enrolling interns")
     if (
         db.scalar(
             select(Enrollment.id).where(
