@@ -24,7 +24,7 @@ With `make` available, use `make up`, `make test`, `make lint` and so on.
 
 `.env` is created from `.env.example` on first `up`. Never commit `.env`.
 
-Commands for later phases (`client`, `a11y`) exist but report which task will implement them.
+Run `make client` (or `./scripts/dev.ps1 client`) to export the API schema and regenerate the TypeScript declarations. The `a11y` command is planned.
 
 ## First start
 
