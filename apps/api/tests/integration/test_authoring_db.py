@@ -441,3 +441,179 @@ def test_fr_hr_01_enrollment_requires_published_course(
         cohorts.enroll(db, world.admin, cohort.id, body)
     assert exc.value.status == (409 if course_status == "draft" else 422)
     assert cohorts.cohort_detail(db, cohort.id).enrollment_count == 0
+
+
+def test_fr_rev_03_trainer_reviews_pin_rubrics_and_unlock_next_milestone(
+    db: Session, world: World
+) -> None:
+    from sqlalchemy import text
+
+    from app.modules.catalog.models import RubricVersion, TaskTemplate
+    from app.modules.delivery.models import TaskInstance, TaskInstanceStatus
+    from app.modules.identity.deps import set_rls_context
+    from app.modules.review import service as reviews
+    from app.modules.review.schemas import ReviewInput
+    from app.modules.submissions import service as submissions
+    from app.modules.submissions.schemas import ArtifactIn, SubmissionIn
+
+    enrollment = db.scalar(select(Enrollment).where(Enrollment.user_id == world.intern_id))
+    assert enrollment is not None
+    cohort = db.get(Cohort, enrollment.cohort_id)
+    assert cohort is not None
+    cohort.trainer_id = world.trainer.user_id
+    other = Principal(_user(db, "other-trainer").id, frozenset({"trainer"}))
+    intern = Principal(world.intern_id, frozenset({"intern"}))
+    catalog.create_task(
+        db,
+        world.admin,
+        world.first_module_id,
+        admin_s.TaskIn(title="Second task", description="Another required task"),
+    )
+    course_tree = catalog.create_module(
+        db,
+        world.admin,
+        world.course_id,
+        admin_s.ModuleIn(title="Next", description="Next milestone", learning_objective="Learn"),
+    )
+    next_module = course_tree.modules[-1].id
+    catalog.create_task(
+        db,
+        world.admin,
+        next_module,
+        admin_s.TaskIn(title="Later task", description="Later"),
+    )
+    tasks = db.execute(
+        select(TaskInstance, TaskTemplate)
+        .join(TaskTemplate, TaskTemplate.id == TaskInstance.task_template_id)
+        .where(
+            TaskInstance.enrollment_id == enrollment.id,
+            TaskTemplate.module_id == world.first_module_id,
+        )
+        .order_by(TaskTemplate.title)
+    ).all()
+    assert len(tasks) == 2
+    rubric = RubricVersion(
+        rubric_key="test",
+        version=1,
+        published=True,
+        content_hash=uuid.uuid4().hex,
+        content={},
+    )
+    updated_rubric = RubricVersion(
+        rubric_key="test",
+        version=2,
+        published=True,
+        content_hash=uuid.uuid4().hex,
+        content={},
+    )
+    db.add_all([rubric, updated_rubric])
+    db.flush()
+    for _, template in tasks:
+        template.rubric_version_id = rubric.id
+        template.deliverables = [{"id": "notes", "kind": "text", "required": True}]
+    db.flush()
+
+    db.execute(text("SET LOCAL ROLE aitms_app"))
+    set_rls_context(db, intern)
+    hand_in = SubmissionIn(
+        artifacts=[ArtifactIn(deliverable_id="notes", kind="text", text="Draft")]
+    )
+    first, _ = submissions.create_submission(
+        db, intern, tasks[0][0].id, hand_in, "first", get_settings()
+    )
+    replay, created = submissions.create_submission(
+        db, intern, tasks[0][0].id, hand_in, "first", get_settings()
+    )
+    assert not created and replay.id == first.id
+
+    set_rls_context(db, other)
+    assert reviews.queue(db, other) == []
+    with pytest.raises(ProblemError) as exc:
+        reviews.decide(
+            db,
+            other,
+            first.id,
+            ReviewInput(
+                decision="approve",
+                reason="",
+                rubric_version_id=rubric.id,
+            ),
+        )
+    assert exc.value.status == 404
+
+    # Simulate an admin publishing a replacement while this attempt waits.
+    set_rls_context(db, world.admin)
+    tasks[0][1].rubric_version_id = updated_rubric.id
+    db.flush()
+    set_rls_context(db, world.trainer)
+    assert [row.submission_id for row in reviews.queue(db, world.trainer)] == [first.id]
+    assert reviews.rubric_for_review(db, world.trainer, first.id).id == rubric.id
+    with pytest.raises(ProblemError) as exc:
+        reviews.decide(
+            db,
+            world.trainer,
+            first.id,
+            ReviewInput(
+                decision="approve",
+                reason="",
+                rubric_version_id=updated_rubric.id,
+            ),
+        )
+    assert exc.value.status == 409
+    reviews.decide(
+        db,
+        world.trainer,
+        first.id,
+        ReviewInput(
+            decision="request_revision",
+            reason="Add acceptance criteria",
+            rubric_version_id=rubric.id,
+        ),
+    )
+    set_rls_context(db, intern)
+    submission = submissions.get_submission(db, first.id)
+    assert submission.review is not None
+    assert submission.review.reason == "Add acceptance criteria"
+    second, _ = submissions.create_submission(
+        db, intern, tasks[0][0].id, hand_in, "second", get_settings()
+    )
+    remaining, _ = submissions.create_submission(
+        db, intern, tasks[1][0].id, hand_in, "remaining", get_settings()
+    )
+    set_rls_context(db, world.trainer)
+    with pytest.raises(ProblemError) as exc:
+        reviews.decide(
+            db,
+            world.trainer,
+            first.id,
+            ReviewInput(
+                decision="approve",
+                reason="",
+                rubric_version_id=rubric.id,
+            ),
+        )
+    assert exc.value.status == 409
+    approve = ReviewInput(decision="approve", reason="", rubric_version_id=updated_rubric.id)
+    reviews.decide(db, world.trainer, second.id, approve)
+    with pytest.raises(ProblemError) as exc:
+        reviews.decide(db, world.trainer, second.id, approve)
+    assert exc.value.status == 409
+    assert tasks[0][0].status == TaskInstanceStatus.complete
+    dashboard = intern_dashboard(db, world.intern_id)
+    assert dashboard is not None
+    assert [m.status for m in dashboard.enrollments[0].milestones] == ["unlocked", "locked"]
+
+    reviews.decide(
+        db,
+        world.trainer,
+        remaining.id,
+        ReviewInput(
+            decision="approve",
+            reason="",
+            rubric_version_id=rubric.id,
+        ),
+    )
+    dashboard = intern_dashboard(db, world.intern_id)
+    assert dashboard is not None
+    assert [m.status for m in dashboard.enrollments[0].milestones] == ["complete", "unlocked"]
+    assert reviews.queue(db, world.trainer) == []

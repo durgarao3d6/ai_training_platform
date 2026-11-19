@@ -436,6 +436,142 @@
         }
       }
     },
+    "/api/v1/trainer/review-queue": {
+      "get": {
+        "tags": [
+          "trainer review"
+        ],
+        "summary": "Review Queue",
+        "operationId": "review_queue_api_v1_trainer_review_queue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewQueueItem"
+                  },
+                  "type": "array",
+                  "title": "Response Review Queue Api V1 Trainer Review Queue Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/trainer/submissions/{submission_id}/rubric": {
+      "get": {
+        "tags": [
+          "trainer review"
+        ],
+        "summary": "Review Rubric",
+        "operationId": "review_rubric_api_v1_trainer_submissions__submission_id__rubric_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewRubric"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trainer/submissions/{submission_id}/decision": {
+      "post": {
+        "tags": [
+          "trainer review"
+        ],
+        "summary": "Record Decision",
+        "operationId": "record_decision_api_v1_trainer_submissions__submission_id__decision_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/uploads/sign": {
       "post": {
         "tags": [
@@ -5326,6 +5462,139 @@
         "type": "object",
         "title": "PublishMaterialIn"
       },
+      "ReviewInput": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "request_revision"
+            ],
+            "title": "Decision"
+          },
+          "rubric_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Rubric Version Id"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 5000,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "rubric_version_id",
+          "reason"
+        ],
+        "title": "ReviewInput"
+      },
+      "ReviewQueueItem": {
+        "properties": {
+          "submission_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Submission Id"
+          },
+          "attempt_number": {
+            "type": "integer",
+            "title": "Attempt Number"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "intern_name": {
+            "type": "string",
+            "title": "Intern Name"
+          },
+          "task_title": {
+            "type": "string",
+            "title": "Task Title"
+          },
+          "cohort_name": {
+            "type": "string",
+            "title": "Cohort Name"
+          },
+          "rubric_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Rubric Version Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "submission_id",
+          "attempt_number",
+          "submitted_at",
+          "intern_name",
+          "task_title",
+          "cohort_name",
+          "rubric_version_id"
+        ],
+        "title": "ReviewQueueItem"
+      },
+      "ReviewResult": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "request_revision"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Decided At"
+          },
+          "rubric_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Rubric Version Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "reason",
+          "decided_at",
+          "rubric_version_id"
+        ],
+        "title": "ReviewResult"
+      },
+      "ReviewRubric": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "content": {
+            "type": "object",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "content"
+        ],
+        "title": "ReviewRubric"
+      },
       "RoleProfileOut": {
         "properties": {
           "key": {
@@ -5597,6 +5866,16 @@
               }
             ],
             "title": "Evaluation Id"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
