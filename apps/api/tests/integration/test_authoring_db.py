@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.errors import ProblemError
 from app.modules.admin import catalog_service as catalog
+from app.modules.admin import cohort_service as cohorts
 from app.modules.admin import schemas as admin_s
 from app.modules.admin.enrollment import sync_enrollment
 from app.modules.audit.models import AuditLog
@@ -32,10 +33,11 @@ from app.modules.authoring import schemas as s
 from app.modules.authoring import service
 from app.modules.authoring.models import AiJob, AiJobKind, AiJobStatus, CourseMaterial
 from app.modules.catalog import service as catalog_read
+from app.modules.catalog.models import Course
 from app.modules.catalog.roles import ensure_role_profiles
 from app.modules.delivery.models import Cohort, Enrollment
 from app.modules.identity.deps import Principal
-from app.modules.identity.models import User
+from app.modules.identity.models import Role, RoleAssignment, User
 from app.modules.progression.service import intern_dashboard
 
 pytestmark = pytest.mark.skipif(os.environ.get("RUN_INTEGRATION") != "1", reason="integration test")
@@ -407,3 +409,35 @@ def test_material_becomes_a_draft_reading_note(db: Session, world: World) -> Non
     service.approve_component(db, w.admin, note.id)
     items = service.study_material(db, _intern(w), w.first_module_id).items
     assert len(items) == 1 and items[0].payload == {"body": "Study this first."}
+
+
+@pytest.mark.parametrize("course_status", ["draft", "approved", "missing"])
+def test_fr_hr_01_enrollment_requires_published_course(
+    db: Session, world: World, course_status: str
+) -> None:
+    course = db.get(Course, world.course_id)
+    assert course is not None
+    assert course.review_status == "draft"
+    if course_status == "approved":
+        course.review_status = "approved"
+
+    intern = _user(db, "new-intern")
+    db.add(RoleAssignment(user_id=intern.id, role=Role.intern))
+    cohort = Cohort(name="New cohort")
+    db.add(cohort)
+    db.flush()
+    course_id = uuid.uuid4() if course_status == "missing" else course.id
+    body = admin_s.EnrollmentIn(user_id=intern.id, course_id=course_id)
+
+    if course_status == "approved":
+        result = cohorts.enroll(db, world.admin, cohort.id, body)
+        assert result.enrollment_count == 1
+        dashboard = intern_dashboard(db, intern.id)
+        assert dashboard is not None
+        assert dashboard.enrollments[0].milestones[0].status == "unlocked"
+        return
+
+    with pytest.raises(ProblemError) as exc:
+        cohorts.enroll(db, world.admin, cohort.id, body)
+    assert exc.value.status == (409 if course_status == "draft" else 422)
+    assert cohorts.cohort_detail(db, cohort.id).enrollment_count == 0

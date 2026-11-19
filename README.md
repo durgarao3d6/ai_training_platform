@@ -60,7 +60,7 @@ There is no sample data. A fresh platform has no courses, cohorts or enrollments
 Everything else is created in the application:
 
 - Admins author courses, milestones, tasks, deliverable manifests and rubrics (draft, then publish).
-- HR and admins create cohorts, enroll interns (an intern can be in several courses) and create accounts. HR can create interns only.
+- HR and admins create cohorts, enroll interns in published courses (an intern can be in several courses) and create accounts. HR can create interns only.
 - Enrolling an intern creates their milestone progress and task instances.
 
 Optional one-time import: the drafted YAML in `content/` can be brought in once with `python -m app.content.cli import` (run it in the api container). It only creates missing records and never overwrites edits made in the app. `./scripts/dev.ps1 content-validate` checks the YAML without importing it.
