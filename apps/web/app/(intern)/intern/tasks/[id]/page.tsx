@@ -6,10 +6,11 @@ import { useParams } from "next/navigation";
 import { useDashboard } from "@/components/intern/useDashboard";
 import { StatusChip } from "@/components/status/StatusChip";
 import { StudyMaterial } from "@/components/study/StudyMaterial";
-import { AttemptHistory } from "@/components/submission/AttemptHistory";
+import { AttemptHistory, ReviewFeedback } from "@/components/submission/AttemptHistory";
 import { SubmissionPanel } from "@/components/submission/SubmissionPanel";
 import { Icon } from "@/components/ui/Icon";
 import {
+  Button,
   Card,
   EmptyState,
   Notice,
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/primitives";
 import { ApiError } from "@/lib/api";
 import { EMPTY, TASK_STATUS, TRAINER_REVIEW_NOTE } from "@/lib/microcopy";
-import type { SubmissionSummary, TaskInstanceView } from "@/lib/types";
+import type { SubmissionSummary, SubmissionView, TaskInstanceView } from "@/lib/types";
 import { useApi } from "@/lib/useApi";
 
 import page from "./task.module.css";
@@ -52,11 +53,25 @@ export default function TaskPage() {
   const task = useApi<TaskInstanceView>(`/task-instances/${id}`);
   const attempts = useApi<SubmissionSummary[]>(`/task-instances/${id}/submissions`);
   const dashboard = useDashboard();
+  const latest = attempts.data?.[0];
+  const feedback = useApi<SubmissionView>(
+    latest?.status === "evaluated" ? `/submissions/${latest.id}` : null,
+  );
+
+  function refreshProgress() {
+    task.reload();
+    attempts.reload();
+    dashboard.reload();
+  }
 
   const view = task.data;
   const t = view?.task;
   const enrollment = dashboard.data?.enrollments.find((e) => e.enrollment_id === view?.enrollment_id);
   const milestone = enrollment?.milestones.find((m) => m.tasks.some((x) => x.task_instance_id === id));
+
+  const nextMilestone = milestone?.status === "complete"
+    ? enrollment?.milestones.find((item) => item.position > milestone.position && item.status === "unlocked")
+    : null;
 
   if (task.error instanceof ApiError && task.error.status === 404) {
     return (
@@ -178,10 +193,7 @@ export default function TaskPage() {
                   taskInstanceId={view.id}
                   status={view.status}
                   deliverables={t.deliverables}
-                  onSubmitted={() => {
-                    attempts.reload();
-                    task.reload();
-                  }}
+                  onSubmitted={refreshProgress}
                 />
               </>
             ) : (
@@ -189,6 +201,15 @@ export default function TaskPage() {
             )}
           </Card>
           <Card title="Your attempts">
+            <Button variant="secondary" onClick={refreshProgress} disabled={attempts.loading}>
+              Refresh progress
+            </Button>
+            {feedback.data?.id === latest?.id && feedback.data?.review && (
+              <ReviewFeedback review={feedback.data.review} />
+            )}
+            {nextMilestone && enrollment && (
+              <p><Link href={`/intern/courses/${enrollment.enrollment_id}`}>Next milestone · {nextMilestone.title}</Link></p>
+            )}
             {attempts.error && !attempts.data ? (
               <Notice>{ATTEMPTS_FAILED}</Notice>
             ) : (

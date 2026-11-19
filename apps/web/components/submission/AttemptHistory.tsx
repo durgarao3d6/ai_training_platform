@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { StatusChip } from "@/components/status/StatusChip";
 import { Icon } from "@/components/ui/Icon";
 import { Button, EmptyState, Loading, Notice, SkeletonRows } from "@/components/ui/primitives";
+import type { components } from "@/lib/api-schema";
 import { EMPTY, SUBMISSION_STATUS } from "@/lib/microcopy";
 import { downloadArtifact, getSubmission } from "@/lib/submissions";
 import type { Deliverable, SubmissionSummary, SubmissionView } from "@/lib/types";
@@ -20,7 +21,6 @@ function formatSize(bytes: number | null): string {
 
 function AttemptDetails({ id, deliverables }: { id: string; deliverables: Deliverable[] }) {
   const [state, setState] = useState<{ data: SubmissionView | null; error: boolean }>({ data: null, error: false });
-  const titles = Object.fromEntries(deliverables.map((d) => [d.id, d.title]));
 
   useEffect(() => {
     let cancelled = false;
@@ -41,30 +41,69 @@ function AttemptDetails({ id, deliverables }: { id: string; deliverables: Delive
     );
 
   return (
-    <ul className={styles.artifacts}>
-      {state.data.artifacts.map((a) => (
-        <li key={a.id} className={styles.artifact}>
-          <span className={styles.artifactFor}>{titles[a.deliverable_id] ?? a.deliverable_id}</span>
-          {a.kind === "file" && a.download_path && (
-            <Button
-              variant="ghost"
-              size="sm"
-              icon="download"
-              onClick={() => void downloadArtifact(a.download_path!, a.filename ?? "file")}
-            >
-              {a.filename} <span className={styles.size}>{formatSize(a.size_bytes)}</span>
-            </Button>
-          )}
-          {a.kind === "link" && a.url && (
-            <a href={a.url} target="_blank" rel="noopener noreferrer" className={styles.artifactLink}>
-              <Icon name="link" size={16} />
-              {a.url}
-            </a>
-          )}
-          {a.kind === "text" && <p className={styles.textPreview}>{a.text}</p>}
-        </li>
-      ))}
-    </ul>
+    <>
+      {state.data.review && <ReviewFeedback review={state.data.review} />}
+      <AttemptArtifacts artifacts={state.data.artifacts} deliverables={deliverables} />
+    </>
+  );
+}
+
+export function ReviewFeedback({ review }: { review: components["schemas"]["ReviewResult"] }) {
+  return (
+    <div className={styles.reviewFeedback}>
+      <strong>{review.decision === "approve" ? "Approved" : "Revision requested"}</strong>
+      {review.reason && <p className={styles.textPreview}>{review.reason}</p>}
+    </div>
+  );
+}
+
+export function AttemptArtifacts({
+  artifacts,
+  deliverables = [],
+}: {
+  artifacts: components["schemas"]["ArtifactOut"][];
+  deliverables?: Deliverable[];
+}) {
+  const titles = Object.fromEntries(deliverables.map((d) => [d.id, d.title]));
+  const [downloadFailed, setDownloadFailed] = useState(false);
+
+  async function download(path: string, filename: string) {
+    setDownloadFailed(false);
+    try {
+      await downloadArtifact(path, filename);
+    } catch {
+      setDownloadFailed(true);
+    }
+  }
+
+  return (
+    <>
+      {downloadFailed && <Notice>The file could not be downloaded. Try again.</Notice>}
+      <ul className={styles.artifacts}>
+        {artifacts.map((a) => (
+          <li key={a.id} className={styles.artifact}>
+            <span className={styles.artifactFor}>{titles[a.deliverable_id] ?? a.deliverable_id}</span>
+            {a.kind === "file" && a.download_path && (
+              <Button
+                variant="ghost"
+                size="sm"
+                icon="download"
+                onClick={() => void download(a.download_path!, a.filename ?? "file")}
+              >
+                {a.filename} <span className={styles.size}>{formatSize(a.size_bytes)}</span>
+              </Button>
+            )}
+            {a.kind === "link" && a.url && (
+              <a href={a.url} target="_blank" rel="noopener noreferrer" className={styles.artifactLink}>
+                <Icon name="link" size={16} />
+                {a.url}
+              </a>
+            )}
+            {a.kind === "text" && <p className={styles.textPreview}>{a.text}</p>}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

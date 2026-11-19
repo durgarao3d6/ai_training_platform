@@ -1,0 +1,44 @@
+.list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+.list li {
+  display: grid;
+  gap: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.list a {
+  text-decoration: underline;
+}
+
+.reviewLayout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+  max-width: 42rem;
+}
+
+.form textarea,
+.form select {
+  font: inherit;
+  padding: 0.5rem;
+  max-width: 100%;
+}
+
+@media (max-width: 48rem) {
+  .reviewLayout {
+    grid-template-columns: 1fr;
+  }
+}
