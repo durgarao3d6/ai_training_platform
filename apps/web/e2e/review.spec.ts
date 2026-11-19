@@ -26,8 +26,10 @@ async function recordDecision(page: Page, decision: "request_revision" | "approv
 }
 
 test("BA intern revises an attempt and trainer approval unlocks the next milestone", async ({ browser }) => {
-  const intern = await browser.newPage();
-  const trainer = await browser.newPage();
+  const internContext = await browser.newContext();
+  const trainerContext = await browser.newContext();
+  const intern = await internContext.newPage();
+  const trainer = await trainerContext.newPage();
   try {
     await signIn(intern, "intern.ba@example.com", "intern");
     await intern.getByRole("link", { name: "Continue the task" }).click();
@@ -62,7 +64,7 @@ test("BA intern revises an attempt and trainer approval unlocks the next milesto
     await intern.getByRole("button", { name: "Refresh progress" }).click();
     await expect(intern.getByRole("link", { name: "Next milestone · Milestone 2" })).toBeVisible();
   } finally {
-    await intern.close();
-    await trainer.close();
+    await internContext.close();
+    await trainerContext.close();
   }
 });
