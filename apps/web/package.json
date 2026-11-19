@@ -32,6 +32,9 @@
   "overrides": {
     "@axe-core/playwright": {
       "playwright-core": "1.55.1"
+    },
+    "next": {
+      "postcss": "8.5.33"
     }
   }
 }
