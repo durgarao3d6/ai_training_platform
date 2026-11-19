@@ -17,6 +17,7 @@ from collections import Counter
 from pathlib import PurePosixPath
 from typing import Any
 
+import structlog
 from fastapi import status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -47,6 +48,7 @@ OPEN_STATUSES = {
     TaskInstanceStatus.in_progress,
     TaskInstanceStatus.needs_another_pass,
 }
+_log = structlog.get_logger(__name__)
 DEFAULT_MAX = {"file": 20, "link": 10, "text": 1}
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
 
@@ -134,6 +136,7 @@ def _validate(
     manifest: dict[str, dict[str, Any]],
     items: list[ArtifactIn],
     settings: Settings,
+    snapshot_keys: list[str],
 ) -> list[Artifact]:
     """Build artifacts or raise a 422 listing every problem."""
     problems: list[dict[str, Any]] = []
@@ -179,8 +182,16 @@ def _validate(
                     )
                 )
                 continue
+            accept = d.get("accept", [])
+            if accept and _extension(key) not in accept:
+                problems.append(
+                    artifact_problem(item.deliverable_id, f"Accepted types: {', '.join(accept)}.")
+                )
+                continue
+            snapshot_key = f"submitted-artifacts/{instance.id}/{uuid.uuid4()}"
+            snapshot_keys.append(snapshot_key)
             try:
-                stored = storage.inspect(key)
+                stored = storage.snapshot(key, snapshot_key)
             except storage.ObjectMissing:
                 problems.append(
                     artifact_problem(
@@ -188,12 +199,7 @@ def _validate(
                     )
                 )
                 continue
-            accept = d.get("accept", [])
-            if accept and _extension(key) not in accept:
-                problems.append(
-                    artifact_problem(item.deliverable_id, f"Accepted types: {', '.join(accept)}.")
-                )
-            elif stored.size_bytes == 0:
+            if stored.size_bytes == 0:
                 problems.append(artifact_problem(item.deliverable_id, "The file is empty."))
             elif stored.size_bytes > settings.max_upload_bytes:
                 problems.append(artifact_problem(item.deliverable_id, "The file is too large."))
@@ -202,7 +208,7 @@ def _validate(
                     Artifact(
                         deliverable_id=item.deliverable_id,
                         kind=ArtifactKind.file,
-                        storage_key=key,
+                        storage_key=stored.key,
                         filename=PurePosixPath(key).name,
                         content_type=stored.content_type,
                         size_bytes=stored.size_bytes,
@@ -315,29 +321,40 @@ def create_submission(
             return _submission_out(db, existing), False
 
     _require_open(instance)
-    artifacts = _validate(instance, _manifest(db, instance), body.artifacts, settings)
-
-    last = db.scalar(
-        select(func.max(Submission.attempt_number)).where(
-            Submission.task_instance_id == instance.id
+    snapshot_keys: list[str] = []
+    try:
+        artifacts = _validate(
+            instance, _manifest(db, instance), body.artifacts, settings, snapshot_keys
         )
-    )
-    submission = Submission(
-        task_instance_id=instance.id,
-        attempt_number=(last or 0) + 1,
-        idempotency_key=idempotency_key,
-        status=SubmissionStatus.received,
-    )
-    db.add(submission)
-    db.flush()
-    for artifact in artifacts:
-        artifact.submission_id = submission.id
-        db.add(artifact)
-    if instance.status is not TaskInstanceStatus.in_progress:
-        instance.status = TaskInstanceStatus.in_progress
-    enqueue(db, "submission.created", {"submission_id": str(submission.id)})
-    db.flush()
-    return _submission_out(db, submission), True
+
+        last = db.scalar(
+            select(func.max(Submission.attempt_number)).where(
+                Submission.task_instance_id == instance.id
+            )
+        )
+        submission = Submission(
+            task_instance_id=instance.id,
+            attempt_number=(last or 0) + 1,
+            idempotency_key=idempotency_key,
+            status=SubmissionStatus.received,
+        )
+        db.add(submission)
+        db.flush()
+        for artifact in artifacts:
+            artifact.submission_id = submission.id
+            db.add(artifact)
+        if instance.status is not TaskInstanceStatus.in_progress:
+            instance.status = TaskInstanceStatus.in_progress
+        enqueue(db, "submission.created", {"submission_id": str(submission.id)})
+        db.flush()
+        return _submission_out(db, submission), True
+    except Exception:
+        for key in snapshot_keys:
+            try:
+                storage.delete(key)
+            except Exception:
+                _log.warning("submission_snapshot_cleanup_failed", key=key, exc_info=True)
+        raise
 
 
 def task_instance_of(db: Session, submission_id: uuid.UUID) -> uuid.UUID:

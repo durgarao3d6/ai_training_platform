@@ -11,6 +11,7 @@ are checked on every download and no long-lived download URLs exist.
 
 import hashlib
 from collections.abc import Iterator
+from contextlib import closing
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
@@ -80,22 +81,39 @@ def presign_upload(key: str, content_type: str, max_bytes: int, expires_in: int)
     }
 
 
-def inspect(key: str) -> StoredObject:
-    """Size, content type and SHA-256 computed from the stored bytes (never from the client)."""
+def snapshot(source_key: str, destination_key: str) -> StoredObject:
+    """Copy a staged upload to a server-owned key and inspect the finalized bytes."""
     settings = get_settings()
-    client = get_client()
     try:
-        head = client.head_object(Bucket=settings.s3_bucket, Key=key)
-        body = client.get_object(Bucket=settings.s3_bucket, Key=key)["Body"]
+        get_client().copy_object(
+            Bucket=settings.s3_bucket,
+            Key=destination_key,
+            CopySource={"Bucket": settings.s3_bucket, "Key": source_key},
+        )
     except ClientError as exc:
-        raise ObjectMissing(key) from exc
+        if exc.response["Error"]["Code"] in {"404", "NoSuchKey", "NotFound"}:
+            raise ObjectMissing(source_key) from exc
+        raise
+    return inspect(destination_key)
+
+
+def inspect(key: str) -> StoredObject:
+    """Size, content type and SHA-256 come from the same object response."""
+    settings = get_settings()
+    try:
+        obj = get_client().get_object(Bucket=settings.s3_bucket, Key=key)
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] in {"404", "NoSuchKey", "NotFound"}:
+            raise ObjectMissing(key) from exc
+        raise
     digest = hashlib.sha256()
-    for chunk in iter(lambda: body.read(CHUNK), b""):
-        digest.update(chunk)
+    with closing(obj["Body"]) as body:
+        for chunk in iter(lambda: body.read(CHUNK), b""):
+            digest.update(chunk)
     return StoredObject(
         key=key,
-        size_bytes=int(head["ContentLength"]),
-        content_type=head.get("ContentType"),
+        size_bytes=int(obj["ContentLength"]),
+        content_type=obj.get("ContentType"),
         sha256=digest.hexdigest(),
     )
 

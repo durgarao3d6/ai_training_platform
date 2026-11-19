@@ -39,3 +39,14 @@ Positive: no dependency on the discontinued MinIO images; the same S3 integratio
 
 Trade-offs: RustFS is a different implementation, so S3 compatibility is verified per operation
 (condition 5). Single-node, single-disk local storage is not a high-availability configuration.
+
+
+### Submitted file storage
+
+New file submissions copy staged uploads into server-owned keys under
+`submitted-artifacts/`. The API computes the stored digest and size from the finalized
+object. Existing artifact records keep their original keys. Their checksums record the
+bytes observed at acceptance, and a later overwrite of a legacy object cannot be recovered
+from that checksum. Rejected requests attempt to delete newly copied objects. A process
+interruption or database commit failure can leave unreferenced copies, so any future
+cleanup of this prefix must reconcile keys with artifact records.
