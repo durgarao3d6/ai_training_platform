@@ -1,0 +1,36 @@
+# Test case template for the QA login and search task (milestone 3).
+# The platform runs these tests against the reference application. Write at least 12 test
+# cases and cite a requirement ID in each one.
+#
+# Steps you can use:   goto, fill, click, press, request
+# Checks you can use:  url_is, visible, text_contains, status, json_has
+# A step or check outside this list is rejected with a message naming it.
+# Selectors are the reference app's test IDs (for example login-button, search-box).
+# Use {{valid_password}} instead of writing a real password.
+#
+# DRAFT: the action vocabulary is owned by the platform engineer and the QA expert.
+
+- id: TC-001
+  title: Login succeeds with valid credentials
+  requirement: REQ-001
+  type: ui
+  priority: high
+  preconditions: Employee account employee1 exists
+  steps:
+    - goto: /login
+    - fill: {field: email, value: employee1@example.test}
+    - fill: {field: password, value: '{{valid_password}}'}
+    - click: login-button
+  expect:
+    - url_is: /home
+    - visible: search-box
+
+- id: TC-014
+  title: Search API rejects an empty query
+  requirement: REQ-004
+  type: api
+  steps:
+    - request: {method: GET, path: /api/search, query: {q: ''}}
+  expect:
+    - status: 400
+    - json_has: error

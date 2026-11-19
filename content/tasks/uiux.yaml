@@ -1,0 +1,128 @@
+# Source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, sections 5 and 6.4. Drafts.
+# Review rule: every UX task needs trainer review (also set on the uiux role profile).
+tasks:
+  - key: ux.problem_understanding
+    module: ux.m1
+    title: Understand business problem
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: State the user problem and the design goals.
+    submits: Problem statement and goals
+    evaluated_on: Design problem understanding
+
+  - key: ux.personas
+    module: ux.m2
+    title: Identify user personas
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Create personas based on evidence about the portal's employees.
+    submits: Personas
+    evaluated_on: Persona relevance
+
+  - key: ux.journey
+    module: ux.m3
+    title: Create user journey
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Map the journey from question to answer, including pain points.
+    submits: Journey map
+    evaluated_on: Journey completeness
+
+  - key: ux.information_architecture
+    module: ux.m4
+    title: Prepare information architecture
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Organise content and navigation.
+    submits: Sitemap and navigation hierarchy
+    evaluated_on: Navigation and hierarchy
+
+  - key: ux.user_flows
+    module: ux.m5
+    title: Create user flows
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Draw flows for the key tasks, including exception cases.
+    submits: Flow diagrams
+    evaluated_on: Workflow consistency
+
+  - key: ux.homepage_wireframe
+    module: ux.m6
+    title: Knowledge portal homepage wireframe
+    task_type: practical
+    depth: demo
+    requires_review: true
+    description: >-
+      Design the knowledge portal homepage as low-fidelity wireframes. Cover the desktop homepage,
+      the search input with the AI assistant area, suggested questions, recent searches, document
+      source display, support request entry, the search results screen and the no-results screen.
+      That is at least three frames: the homepage, the results screen with sources, and the
+      no-results screen with the support request entry. Put requirement or story IDs in frame names
+      where they exist.
+    submits: >-
+      Design frames (a Figma link with view access, or one PNG or PDF per screen), a user flow, a
+      design explanation of 150 to 300 words, and a one-page usability check
+    evaluated_on: The UX homepage wireframe rubric; all automated findings are advisory and a trainer always reviews
+    # Draft manifest (Milestone Catalog 6.4, decision register section 2, AITMS-CONT-003).
+    deliverables:
+      - id: design_frames
+        title: Design frames
+        kind: [link, file]
+        accept: [.png, .pdf]
+        min_count: 3
+        required: true
+        description: A Figma link with view access, or one PNG or PDF per screen (at least three files)
+      - id: user_flow
+        title: User flow
+        kind: [file, link]
+        accept: [.png, .pdf]
+        required: true
+        description: An image, or a Figma page
+      - id: design_explanation
+        title: Design explanation
+        kind: text
+        min_words: 150
+        max_words: 300
+        required: true
+        description: Who it is for, the key decisions, and how keyboard use works
+      - id: usability_check
+        title: Usability check
+        kind: [file, text]
+        accept: [.pdf, .md, .docx]
+        required: true
+        description: One page with three participants, the tasks, the findings and the changes made
+
+  - key: ux.design_system
+    module: ux.m7
+    title: Develop visual design system
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Define colour, type, components and accessibility rules.
+    submits: Style guide and component set
+    evaluated_on: Consistency and accessibility
+
+  - key: ux.hifi_prototype
+    module: ux.m8
+    title: Create high-fidelity prototype
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Build a clickable prototype of the main journeys.
+    submits: Prototype link and screenshots
+    evaluated_on: Interaction and visual quality
+
+  - key: ux.usability_testing
+    module: ux.m9
+    title: Conduct usability testing
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Test with users, report findings and improve the design.
+    submits: Test plan, findings report, revised design
+    evaluated_on: Findings and design improvements

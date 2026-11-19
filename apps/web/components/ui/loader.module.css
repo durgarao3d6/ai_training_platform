@@ -1,0 +1,283 @@
+/* Loading states. Tokens only: no raw colour values. */
+
+/* ---------- Spinner ---------- */
+/* Inherits the surrounding text colour, so it works on a button and on a card alike. */
+.spinner {
+  flex: none;
+  transform-origin: center;
+  animation: spin 900ms linear infinite;
+}
+
+.track {
+  opacity: 0.18;
+}
+
+.arc {
+  transform-origin: center;
+  animation: breathe 1600ms var(--ease-standard) infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The arc grows and shrinks, so the wait does not look like a fixed tick. */
+@keyframes breathe {
+  0% {
+    stroke-dasharray: 8 49;
+  }
+  50% {
+    stroke-dasharray: 30 27;
+  }
+  100% {
+    stroke-dasharray: 8 49;
+  }
+}
+
+/* ---------- Inline ---------- */
+.inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4) 0;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+
+.inline .spinner {
+  color: var(--color-accent);
+}
+
+/* ---------- Full page ---------- */
+.page {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-5);
+  min-height: 60vh;
+  padding: var(--space-7) var(--space-5);
+}
+
+.marks {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* One tile per track: Developer, Business Analyst, QA, UI/UX. */
+.mark {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  animation: lift 1600ms var(--ease-standard) infinite;
+}
+
+.mark:nth-child(1) {
+  background: var(--track-developer-bg);
+  box-shadow: inset -8px -8px 0 var(--track-developer-blob);
+  animation-delay: 0ms;
+}
+
+.mark:nth-child(2) {
+  background: var(--track-ba-bg);
+  box-shadow: inset -8px -8px 0 var(--track-ba-blob);
+  animation-delay: 140ms;
+}
+
+.mark:nth-child(3) {
+  background: var(--track-qa-bg);
+  box-shadow: inset -8px -8px 0 var(--track-qa-blob);
+  animation-delay: 280ms;
+}
+
+.mark:nth-child(4) {
+  background: var(--track-uiux-bg);
+  box-shadow: inset -8px -8px 0 var(--track-uiux-blob);
+  animation-delay: 420ms;
+}
+
+@keyframes lift {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.55;
+  }
+  35% {
+    transform: translateY(-10px) scale(1.04);
+    opacity: 1;
+  }
+}
+
+.pageLabel {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Skeletons ----------
+   A plain block, not display:contents, so the live region stays in the accessibility tree. */
+.region {
+  display: block;
+}
+
+.block {
+  position: relative;
+  display: block;
+  flex: none;
+  overflow: hidden;
+  background: var(--color-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.circle {
+  border-radius: var(--radius-full);
+}
+
+/* A soft sweep of the card surface across the block. */
+.block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--color-surface), transparent);
+  opacity: 0.7;
+  transform: translateX(-100%);
+  animation: sweep 1500ms var(--ease-standard) infinite;
+}
+
+@keyframes sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.lines {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.tileText {
+  display: grid;
+  flex: 1;
+  gap: var(--space-2);
+}
+
+.table {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-5);
+  align-items: center;
+  min-height: var(--row-h);
+  padding: 0 var(--space-2);
+}
+
+.head {
+  min-height: 40px;
+  margin-bottom: var(--space-2);
+  background: var(--color-sunken);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Hero layout (intern home) ---------- */
+.heroLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.hero {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-height: 300px;
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.heroFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: auto;
+}
+
+.heroSide {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+@media (max-width: 1023px) {
+  .heroLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Motion answers an action; a wait should not keep moving for people who ask it not to. */
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .arc,
+  .mark {
+    animation: none;
+  }
+
+  .arc {
+    stroke-dasharray: 30 27;
+  }
+
+  .mark {
+    opacity: 1;
+  }
+
+  .block::after {
+    animation: none;
+    opacity: 0;
+  }
+}

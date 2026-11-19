@@ -1,0 +1,47 @@
+# DRAFT for the UI/UX role expert (task 3.2). Not loaded until moved to content/rubrics/.
+# Filled from the documents: criteria and weights (PRD Appendix A), threshold 70 (PRD assumption),
+# checkers (Architecture 10). Trainer review is always required for this role.
+# Deliverables: Milestone Catalog section 6.4. Frame coverage of the eight brief items is checked
+# by flow_coverage; all findings are advisory.
+# TODO(role expert): level descriptors 0-4, mandatory gates, bound checks, correction templates.
+rubric_id: ux.homepage_wireframe
+version: 1
+role_profile: uiux
+pass_threshold: 70
+scale: {min: 0, max: 4}
+checkers: [figma_extract, contrast, text_size, tap_target, flow_coverage]
+deliverables:
+  - id: design_frames
+    title: Design frames
+    kind: [link, file]
+    accept: [.png, .pdf]
+    min_count: 3   # applies to the file alternative: one image or PDF per screen
+    required: true
+    description: A Figma link with view access, or one PNG or PDF per screen
+  - id: user_flow
+    title: User flow
+    kind: [file, link]
+    accept: [.png, .pdf]
+    required: true
+    description: An image, or a Figma page
+  - id: design_explanation
+    title: Design explanation
+    kind: text
+    min_words: 150
+    max_words: 300
+    required: true
+    description: Who it is for, the key decisions, and how keyboard use works
+  - id: usability_check
+    title: Usability check
+    kind: [file, text]
+    accept: [.pdf, .md, .docx]
+    required: true
+    description: One page with three participants, the tasks, the findings and the changes made
+criteria:
+  - {id: user_problem_understanding, title: User problem understanding, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: user_journey_and_flow, title: User journey and flow, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: information_architecture, title: Information architecture, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: wireframe_usability, title: Wireframe usability, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: visual_consistency, title: Visual consistency, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: accessibility, title: Accessibility, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: usability_testing, title: Usability testing, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}

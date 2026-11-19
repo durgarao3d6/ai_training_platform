@@ -1,0 +1,113 @@
+# Source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, sections 3 and 6.2. Drafts.
+# The demo task is a self-contained assignment at milestone 3 (scope decision in section 6).
+tasks:
+  - key: ba.business_problem
+    module: ba.m1
+    title: Understand business problem
+    task_type: practical
+    depth: content
+    description: Read the business request and state the problem, the goals and the scope.
+    submits: Business problem statement
+    evaluated_on: Problem identification
+
+  - key: ba.stakeholders
+    module: ba.m2
+    title: Identify stakeholders
+    task_type: practical
+    depth: content
+    description: List who is affected, what each cares about and how much influence they have.
+    submits: Stakeholder list with interest and influence
+    evaluated_on: Stakeholder coverage
+
+  - key: ba.requirements
+    module: ba.m3
+    title: Identify requirements for the portal
+    task_type: practical
+    depth: demo
+    description: >-
+      Employees search several documents to find company policies. The company wants an AI portal
+      that answers questions from approved documents and lets employees raise a support request when
+      no answer exists. From this business request, identify and document the portal's requirements:
+      the business problem, stakeholders, functional and non-functional requirements, user stories
+      with acceptance criteria, and a process flow. Use IDs such as REQ-001, NFR-001 and US-001.
+    submits: >-
+      One .docx or .md document (or pasted text) with sections for the business problem statement,
+      stakeholders, functional requirements, non-functional requirements, user stories and acceptance
+      criteria, plus a process flow as an image, PDF, draw.io link or Mermaid text
+    evaluated_on: Requirement completeness and the BA requirements rubric
+    # Draft manifest (Milestone Catalog 6.2, decision register section 2, AITMS-CONT-003).
+    deliverables:
+      - id: requirements_document
+        title: Requirements document
+        kind: [file, text]
+        accept: [.docx, .md]
+        required: true
+        sections:
+          - Business problem statement
+          - Stakeholders
+          - Functional requirements
+          - Non-functional requirements
+          - User stories
+          - Acceptance criteria
+        description: One document with these headings. Use IDs REQ-001, NFR-001 and US-001.
+      - id: process_flow
+        title: Process flow
+        kind: [file, link, text]
+        accept: [.png, .pdf]
+        required: true
+        description: A PNG or PDF export, a draw.io link, or Mermaid text
+
+  - key: ba.functional_requirements
+    module: ba.m4
+    title: Define functional requirements
+    task_type: practical
+    depth: content
+    description: Write clear, testable functional requirements with unique IDs.
+    submits: Functional requirements list
+    evaluated_on: Clarity and testability
+
+  - key: ba.non_functional_requirements
+    module: ba.m5
+    title: Define non-functional requirements
+    task_type: practical
+    depth: content
+    description: Define measurable security, performance and usability requirements.
+    submits: Non-functional requirements with measures
+    evaluated_on: Security, performance, usability
+
+  - key: ba.user_stories
+    module: ba.m6
+    title: Create user stories
+    task_type: practical
+    depth: content
+    description: Turn requirements into stories in the standard format, each linked to a requirement ID.
+    submits: User stories
+    evaluated_on: Story structure and clarity
+
+  - key: ba.acceptance_criteria
+    module: ba.m7
+    title: Define acceptance criteria
+    task_type: practical
+    depth: content
+    description: Write measurable acceptance criteria for each story.
+    submits: Acceptance criteria in Given, When, Then form
+    evaluated_on: Measurable conditions
+
+  - key: ba.process_flows
+    module: ba.m8
+    title: Create process flow and use cases
+    task_type: practical
+    depth: content
+    description: Model the main flow and the exception flows for the key journeys.
+    submits: Process flow diagram, use cases
+    evaluated_on: Workflow completeness
+
+  - key: ba.srs_traceability
+    module: ba.m9
+    title: Prepare SRS and traceability matrix
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Assemble the specification and a matrix linking requirements to stories and tests.
+    submits: SRS document, traceability matrix
+    evaluated_on: Documentation and consistency

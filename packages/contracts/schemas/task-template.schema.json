@@ -1,0 +1,49 @@
+{
+  "title": "Task template (validated as JSON Schema draft 2020-12 by app/content/validator.py)",
+  "type": "object",
+  "required": ["key", "title", "module", "task_type", "description", "depth"],
+  "additionalProperties": false,
+  "properties": {
+    "key": {"type": "string", "pattern": "^[a-z0-9_.]+$"},
+    "title": {"type": "string", "minLength": 1},
+    "module": {"type": "string", "minLength": 1},
+    "task_type": {"enum": ["practical", "integration", "assessment"]},
+    "description": {"type": "string", "minLength": 1},
+    "learning_objective": {"type": "string"},
+    "submits": {"type": "string", "description": "What the intern hands in, in plain words (content-only tasks)"},
+    "evaluated_on": {"type": "string", "description": "What the work is judged on, in plain words"},
+    "requires_review": {"type": "boolean", "description": "A trainer must review every result"},
+    "depth": {"enum": ["demo", "content"]},
+    "rubric": {"type": "string", "description": "rubric_id; set once the rubric is ready to publish"},
+    "starter_files": {"type": "array", "items": {"type": "string"}, "description": "Paths under content/starters/"},
+    "deliverables": {
+      "description": "Deliverable manifest (Architecture 6.1). The completeness stage works only from this. Same item format as rubric deliverables.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "required"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "kind": {
+            "oneOf": [
+              {"enum": ["file", "link", "text"]},
+              {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["file", "link", "text"]}}
+            ]
+          },
+          "accept": {"type": "array", "items": {"type": "string", "pattern": "^\\."}},
+          "min_words": {"type": "integer", "minimum": 1},
+          "max_words": {"type": "integer", "minimum": 1},
+          "min_count": {"type": "integer", "minimum": 1},
+          "max_count": {"type": "integer", "minimum": 1},
+          "min_items": {"type": "integer", "minimum": 1},
+          "sections": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "required": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "title": "Rubric version, Architecture section 7 (validated as JSON Schema draft 2020-12 by app/content/validator.py)",
+  "type": "object",
+  "$comment": "deliverables is optional: the task's own manifest is canonical (Architecture 6.1).",
+  "required": ["rubric_id", "version", "role_profile", "pass_threshold", "scale", "criteria", "checkers"],
+  "additionalProperties": false,
+  "properties": {
+    "rubric_id": {"type": "string", "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)+$"},
+    "version": {"type": "integer", "minimum": 1},
+    "role_profile": {"enum": ["developer", "ba", "qa", "uiux"]},
+    "pass_threshold": {"type": "number", "minimum": 0, "maximum": 100},
+    "scale": {
+      "type": "object",
+      "required": ["min", "max"],
+      "additionalProperties": false,
+      "properties": {"min": {"const": 0}, "max": {"const": 4}}
+    },
+    "criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "weight", "levels", "correction_template"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "title": {"type": "string", "minLength": 1},
+          "weight": {"type": "integer", "minimum": 1, "maximum": 100},
+          "mandatory_min_level": {"type": "integer", "minimum": 1, "maximum": 4},
+          "levels": {
+            "type": "object",
+            "propertyNames": {"enum": ["0", "1", "2", "3", "4"]},
+            "additionalProperties": {"type": "string", "minLength": 1, "not": {"const": "TODO"}},
+            "required": ["0", "1", "2", "3", "4"]
+          },
+          "bound_checks": {"type": "array", "items": {"type": "string", "pattern": "^[a-z0-9_]+\\.[a-z0-9_]+$"}},
+          "correction_template": {"type": "string", "minLength": 1, "not": {"const": "TODO"}}
+        }
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "required"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "kind": {
+            "description": "One kind, or a list of accepted alternatives (for example a file or a link)",
+            "oneOf": [
+              {"enum": ["file", "link", "text"]},
+              {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["file", "link", "text"]}}
+            ]
+          },
+          "accept": {"type": "array", "items": {"type": "string", "pattern": "^\\."}},
+          "min_words": {"type": "integer", "minimum": 1},
+          "max_words": {"type": "integer", "minimum": 1},
+          "min_count": {"type": "integer", "minimum": 1, "description": "Minimum files or links submitted for this deliverable"},
+          "max_count": {"type": "integer", "minimum": 1, "description": "Maximum files or links submitted for this deliverable"},
+          "min_items": {"type": "integer", "minimum": 1, "description": "Minimum parsed items, for example test cases"},
+          "sections": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Headings the document must contain"},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "checkers": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  }
+}

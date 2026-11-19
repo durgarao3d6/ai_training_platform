@@ -1,0 +1,56 @@
+[project]
+name = "aitms-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi==0.115.6",
+  "uvicorn[standard]==0.34.0",
+  "pydantic[email]==2.10.4",
+  "pydantic-settings==2.7.0",
+  "sqlalchemy==2.0.36",
+  "alembic==1.14.0",
+  "psycopg[binary]==3.2.3",
+  "redis==5.2.1",
+  "structlog==24.4.0",
+  "jsonschema==4.23.0",
+  "pyyaml==6.0.2",
+  "argon2-cffi==23.1.0",
+  "pyjwt==2.10.1",
+  # S3 API client (ADR-011). Pinned below 1.36, whose default request checksums are not yet
+  # supported by every S3-compatible store; revisit when upgrading.
+  "boto3==1.35.99",
+  # Link reachability checks (and the httpx test client).
+  "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.4",
+  "ruff==0.8.4",
+  "mypy==1.14.0",
+  "import-linter==2.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+
+[[tool.mypy.overrides]]
+module = [
+  "yaml.*",
+  "jsonschema.*",
+  "boto3.*",
+  "botocore.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

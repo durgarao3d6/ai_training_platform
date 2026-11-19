@@ -1,0 +1,41 @@
+# DRAFT for the QA role expert (task 3.2). Not loaded until moved to content/rubrics/.
+# Filled from the documents: criteria and weights (PRD Appendix A), threshold 70 (PRD assumption),
+# checkers (Architecture 10).
+# Deliverables: Milestone Catalog section 6.3. Test cases use the platform YAML template
+# (content/starters/qa.login_search/testcases-template.yaml). Requirement IDs per test case and the
+# eight coverage areas are checked by testcase_parse and scenario_coverage.
+# TODO(role expert): level descriptors 0-4, mandatory gates, bound checks, correction templates.
+rubric_id: qa.login_search
+version: 1
+role_profile: qa
+pass_threshold: 70
+scale: {min: 0, max: 4}
+checkers: [testcase_parse, run_against_reference_app, seeded_defect_detection, defect_replay, scenario_coverage]
+deliverables:
+  - id: test_cases
+    title: Test cases
+    kind: file
+    accept: [.yaml, .yml]
+    min_items: 12
+    required: true
+    description: UI and API tests in the platform template, each citing a requirement ID
+  - id: approach_note
+    title: Test approach note
+    kind: text
+    min_words: 60
+    required: true
+    description: Scope, assumptions, and what was not tested
+  - id: defect_log
+    title: Defect log
+    kind: file
+    accept: [.csv, .md]
+    required: true
+    description: Columns id, title, steps, expected, actual, severity. May be empty only with a statement that no defect was found.
+criteria:
+  - {id: test_scenario_coverage, title: Test scenario coverage, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: test_case_accuracy, title: Test case accuracy, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: negative_testing, title: Negative testing, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: api_testing, title: API testing, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: defect_identification, title: Defect identification, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: automation_quality, title: Automation quality, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: documentation, title: Documentation, weight: 5, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}

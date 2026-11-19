@@ -1,0 +1,19 @@
+# Titles and order: original project brief. Descriptions: drafts for the Developer expert.
+key: dev.rag
+title: AI-Powered RAG Application Development
+role_profile: developer
+review_status: draft
+source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, section 2
+description: Build the Smart Knowledge Portal as a retrieval-augmented generation application.
+final_deliverable: Working RAG application over approved documents
+milestones:
+  - {key: dev.m1, position: 1, title: "RAG fundamentals", description: "Explain how retrieval-augmented generation works and where each part fits in the Smart Knowledge Portal."}
+  - {key: dev.m2, position: 2, title: "Document ingestion", description: "Build a loader that extracts text and basic metadata from the portal's approved document types."}
+  - {key: dev.m3, position: 3, title: "Chunking", description: "Split approved documents into overlapping chunks that keep their source, position and metadata."}
+  - {key: dev.m4, position: 4, title: "Embeddings", description: "Generate embeddings for chunks and check that similar text lands close together."}
+  - {key: dev.m5, position: 5, title: "Vector database", description: "Store and index embeddings in PostgreSQL with pgvector."}
+  - {key: dev.m6, position: 6, title: "Retrieval", description: "Retrieve the most relevant chunks for a question and measure how well it works."}
+  - {key: dev.m7, position: 7, title: "Prompt engineering", description: "Build prompts that ground the answer in retrieved text and decline when the text lacks an answer."}
+  - {key: dev.m8, position: 8, title: "LLM integration", description: "Call the language model and return an answer with source references."}
+  - {key: dev.m9, position: 9, title: "Component integration", description: "Connect loader, chunker, embedder, database, retriever and model into one pipeline."}
+  - {key: dev.m10, position: 10, title: "End-to-end testing", description: "Run and demonstrate the complete application on the portal's documents."}

@@ -1,0 +1,6 @@
+{
+  "developer": ["pytest_visible", "pytest_hidden", "coverage", "ruff", "mypy", "edge_case_injection"],
+  "ba": ["doc_parse", "req_id_unique", "ambiguity_lint", "story_format", "gwt_pattern", "nfr_measurable"],
+  "qa": ["testcase_parse", "run_against_reference_app", "seeded_defect_detection", "defect_replay", "scenario_coverage"],
+  "uiux": ["figma_extract", "contrast", "text_size", "tap_target", "flow_coverage", "axe"]
+}

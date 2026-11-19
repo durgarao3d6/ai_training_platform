@@ -1,0 +1,31 @@
+# Test/CI overrides: ephemeral database, LLM in fixture mode, tools container.
+# Use with: docker compose -f infra/compose.yml -f infra/compose.test.yml ...
+services:
+  postgres:
+    tmpfs: [/var/lib/postgresql/data]
+    volumes: !override
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+  api:
+    build: {target: dev}
+    environment:
+      LLM_MODE: fixture
+  worker:
+    build: {target: dev}
+    environment:
+      LLM_MODE: fixture
+
+  # Tooling container: lint, types, tests, content validation, client generation.
+  tools:
+    build:
+      context: ..
+      dockerfile: infra/docker/tools.Dockerfile
+    profiles: [tools]
+    working_dir: /work
+    volumes: ["..:/work"]
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      LLM_MODE: fixture
+      S3_ENDPOINT: http://s3:9000
+    networks: [backend]  # reaches s3 and postgres for integration tests

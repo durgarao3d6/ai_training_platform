@@ -1,0 +1,213 @@
+/* Soft depth shell: the canvas frames a floating white sidebar and the page. */
+.shell {
+  display: grid;
+  grid-template-columns: var(--nav-width) minmax(0, 1fr);
+  gap: var(--space-5);
+  min-height: 100vh;
+  padding: var(--space-5);
+}
+
+.skipLink {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 10;
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-accent);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raised);
+}
+
+.skipLink:focus {
+  top: var(--space-2);
+}
+
+/* ---------- Floating sidebar ---------- */
+.rail {
+  position: sticky;
+  top: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: calc(100vh - 2 * var(--space-5));
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-5);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+  background: var(--track-developer-bg);
+  border-radius: var(--radius-sm);
+  box-shadow: inset -10px -10px 0 var(--track-developer-blob);
+}
+
+.brandName {
+  display: block;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.brandArea {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+/* min-height: 0 lets this flex child shrink, so a long nav scrolls instead of
+   pushing the account block out of the rail. */
+.nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.nav ul {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 46px;
+  padding: 0 var(--space-4);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink-2);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+
+.navLink:hover {
+  color: var(--color-ink);
+  background: var(--color-sunken);
+}
+
+.navLink[aria-current="page"] {
+  color: var(--color-on-action);
+  background: var(--color-action);
+  font-weight: var(--weight-semibold);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+}
+
+.accountText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.accountName {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountRole {
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+.signOut {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--color-ink-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.signOut:hover {
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+/* ---------- Content ---------- */
+.main {
+  min-width: 0;
+}
+
+.main:focus {
+  outline: none;
+}
+
+.content {
+  max-width: var(--content-max);
+  padding: var(--space-3) var(--space-2) var(--space-8);
+}
+
+@media (max-width: 1023px) {
+  .shell {
+    grid-template-columns: 1fr;
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
+  .brand {
+    padding: 0 var(--space-2);
+  }
+
+  .nav {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .nav ul {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .account {
+    margin-left: auto;
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .content {
+    padding: var(--space-3) var(--space-1) var(--space-7);
+  }
+}

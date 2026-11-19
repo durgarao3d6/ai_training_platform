@@ -1,0 +1,26 @@
+# Dev overrides: dev image targets, bind mounts, hot reload.
+services:
+  api:
+    build: {target: dev}
+    environment:
+      CONTENT_DIR: /content
+      CONTRACTS_DIR: /contracts
+    volumes:
+      - ../apps/api:/srv
+      - ../content:/content:ro
+      - ../packages/contracts:/contracts:ro
+  worker:
+    build: {target: dev}
+    volumes: ["../apps/worker:/srv"]
+  web:
+    build: {target: dev}
+    volumes:
+      - ../apps/web:/app
+      - /app/node_modules
+      - /app/.next
+  sandbox-runner:
+    build: {target: dev}
+    volumes: ["../services/sandbox-runner:/srv"]
+  reference-app:
+    build: {target: dev}
+    volumes: ["../services/reference-app:/srv"]

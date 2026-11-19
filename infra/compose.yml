@@ -1,0 +1,161 @@
+# Base stack. Run from the repo root:
+#   docker compose -f infra/compose.yml up --build
+# Dev overrides: add -f infra/compose.dev.yml. Test/CI: add -f infra/compose.test.yml.
+name: aitms
+
+x-env: &env
+  env_file:
+    - path: ../.env
+      required: false
+
+x-python-health: &python-health
+  interval: 10s
+  timeout: 5s
+  retries: 10
+  start_period: 10s
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aitms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local}
+      POSTGRES_DB: ${POSTGRES_DB:-aitms}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-change-me-app}
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [backend]
+
+  redis:
+    image: redis:7.4.1
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [backend]
+
+  # S3-compatible object store (ADR-011: docs/adr/011-rustfs-local-object-storage.md).
+  # App code only speaks the S3 API.
+  s3:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      # ADR-011 condition 3: credentials only from the environment, no fallback values.
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in .env}
+      RUSTFS_VOLUMES: /data
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [s3data:/data]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9000/health || wget -qO- http://localhost:9000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks: [backend]
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/api.Dockerfile
+      target: prod
+    <<: *env
+    environment:
+      # Non-owner role: row-level security applies to every API query.
+      DATABASE_URL: postgresql+psycopg://aitms_app:${APP_DB_PASSWORD:-change-me-app}@postgres:5432/${POSTGRES_DB:-aitms}
+      MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-aitms}:${POSTGRES_PASSWORD:-change-me-local}@postgres:5432/${POSTGRES_DB:-aitms}
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://s3:9000
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      s3: {condition: service_healthy}
+    healthcheck:
+      <<: *python-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/healthz', timeout=3)"]
+    networks: [backend]
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/docker/worker.Dockerfile
+      target: prod
+    <<: *env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-aitms}:${POSTGRES_PASSWORD:-change-me-local}@postgres:5432/${POSTGRES_DB:-aitms}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A worker.celery_app inspect ping -d celery@$$HOSTNAME"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [backend]
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/web.Dockerfile
+      target: prod
+    <<: *env
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports: ["3000:3000"]
+    depends_on:
+      api: {condition: service_healthy}
+      s3: {condition: service_healthy}  # /s3 upload proxy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [backend]
+
+  # The Docker socket is mounted ONLY here, never into api or worker.
+  sandbox-runner:
+    build:
+      context: ..
+      dockerfile: infra/docker/sandbox-runner.Dockerfile
+      target: prod
+    <<: *env
+    healthcheck:
+      <<: *python-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8100/healthz', timeout=3)"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [backend, sandbox_net, refapp_net]
+
+  reference-app:
+    build:
+      context: ..
+      dockerfile: infra/docker/reference-app.Dockerfile
+      target: prod
+    healthcheck:
+      <<: *python-health
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8200/healthz', timeout=3)"]
+    networks: [refapp_net]
+
+networks:
+  backend: {}
+  # No egress: intern code and the reference app cannot reach the internet.
+  sandbox_net:
+    internal: true
+  refapp_net:
+    internal: true
+
+volumes:
+  pgdata: {}
+  s3data: {}

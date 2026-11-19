@@ -1,0 +1,18 @@
+# Titles and order: original project brief. Descriptions: drafts for the UI/UX expert.
+key: ux.design
+title: User Experience and Interface Design
+role_profile: uiux
+review_status: draft
+source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, section 5
+description: Research and design the experience of the Smart Knowledge Portal.
+final_deliverable: Research, flows and high-fidelity prototype
+milestones:
+  - {key: ux.m1, position: 1, title: "Problem understanding", description: "State the user problem and the design goals."}
+  - {key: ux.m2, position: 2, title: "User personas", description: "Create personas based on evidence about the portal's employees."}
+  - {key: ux.m3, position: 3, title: "User journey mapping", description: "Map the journey from question to answer, including pain points."}
+  - {key: ux.m4, position: 4, title: "Information architecture", description: "Organise content and navigation."}
+  - {key: ux.m5, position: 5, title: "User flow creation", description: "Draw flows for the key tasks, including exception cases."}
+  - {key: ux.m6, position: 6, title: "Wireframes", description: "Design the knowledge portal homepage and its key screens as low-fidelity wireframes."}
+  - {key: ux.m7, position: 7, title: "Design system", description: "Define colour, type, components and accessibility rules."}
+  - {key: ux.m8, position: 8, title: "High-fidelity prototype", description: "Build a clickable prototype of the main journeys."}
+  - {key: ux.m9, position: 9, title: "Usability testing", description: "Test with users, report findings and improve the design."}

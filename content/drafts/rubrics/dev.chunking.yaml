@@ -1,0 +1,51 @@
+# DRAFT for the Developer role expert (task 3.2). Not loaded until moved to content/rubrics/.
+# Filled from the documents: criteria and weights (PRD Appendix A), threshold 70 (PRD assumption,
+# pending product owner), checkers (Architecture 10), overlap binding and deliverables (Architecture 7).
+# TODO(role expert): level descriptors 0-4 for every criterion, mandatory gates, correction templates.
+rubric_id: dev.chunking
+version: 1
+role_profile: developer
+pass_threshold: 70
+scale: {min: 0, max: 4}
+checkers: [pytest_visible, pytest_hidden, coverage, ruff, mypy, edge_case_injection]
+# Deliverables: Milestone Catalog section 6.1.
+deliverables:
+  - id: code
+    title: Chunking code
+    kind: file
+    accept: [.py]
+    required: true
+    description: Your chunker.py, implementing the starter interface (Chunk and chunk_text; decision register item 7)
+  - id: tests
+    title: Unit tests
+    kind: file
+    accept: [.py]
+    min_items: 3   # at least three pytest tests collected
+    required: true
+  - id: sample_io
+    title: Sample input and output
+    kind: file
+    accept: [.md, .txt, .json]
+    required: true
+    description: One input and the chunks your code produced from it
+  - id: explanation
+    title: Explanation
+    kind: text
+    min_words: 80
+    required: true
+criteria:
+  - {id: chunking_logic, title: Chunking logic, weight: 25, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - id: overlap_handling
+    title: Overlap handling
+    weight: 20
+    mandatory_min_level: 2   # from the Architecture section 7 example; confirm with the role expert
+    levels:
+      "0": No overlap or overlap breaks chunks
+      "2": Fixed overlap works for normal input
+      "4": Overlap correct, configurable and safe at boundaries
+    bound_checks: [pytest_hidden.overlap]
+    correction_template: corr.overlap
+  - {id: metadata_preservation, title: Metadata preservation, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: edge_cases, title: Edge cases, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: unit_tests, title: Unit tests, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: code_quality, title: Code quality, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}

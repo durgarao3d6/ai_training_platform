@@ -1,0 +1,18 @@
+# Titles and order: original project brief. Descriptions: drafts for the BA expert.
+key: ba.requirements
+title: Business Requirement Analysis and Documentation
+role_profile: ba
+review_status: draft
+source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, section 3
+description: Analyse and document the requirements of the Smart Knowledge Portal.
+final_deliverable: SRS, user stories, process flows, acceptance criteria, traceability matrix
+milestones:
+  - {key: ba.m1, position: 1, title: "Business problem analysis", description: "Read the business request and state the problem, the goals and the scope."}
+  - {key: ba.m2, position: 2, title: "Stakeholder identification", description: "List who is affected, what each cares about and how much influence they have."}
+  - {key: ba.m3, position: 3, title: "Requirement gathering", description: "Identify and document the requirements of the portal from the business request."}
+  - {key: ba.m4, position: 4, title: "Functional requirements", description: "Write clear, testable functional requirements with unique IDs."}
+  - {key: ba.m5, position: 5, title: "Non-functional requirements", description: "Define measurable security, performance and usability requirements."}
+  - {key: ba.m6, position: 6, title: "User stories", description: "Turn requirements into stories in the standard format, each linked to a requirement ID."}
+  - {key: ba.m7, position: 7, title: "Acceptance criteria", description: "Write measurable acceptance criteria for each story."}
+  - {key: ba.m8, position: 8, title: "Process flows and use cases", description: "Model the main flow and the exception flows for the key journeys."}
+  - {key: ba.m9, position: 9, title: "SRS and traceability matrix", description: "Assemble the specification and a matrix linking requirements to stories and tests."}

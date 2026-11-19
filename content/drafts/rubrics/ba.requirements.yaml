@@ -1,0 +1,41 @@
+# DRAFT for the BA role expert (task 3.2). Not loaded until moved to content/rubrics/.
+# Filled from the documents: criteria and weights (PRD Appendix A), threshold 70 (PRD assumption),
+# checkers (Architecture 10).
+# Deliverables: Milestone Catalog section 6.2 (the "seven BA items": six sections in one
+# document plus the process flow). Unique IDs, three or more stakeholders, story and Given/When/Then
+# patterns are checked by the BA checkers (req_id_unique, story_format, gwt_pattern).
+# TODO(role expert): level descriptors 0-4, mandatory gates, bound checks, correction templates.
+rubric_id: ba.requirements
+version: 1
+role_profile: ba
+pass_threshold: 70
+scale: {min: 0, max: 4}
+checkers: [doc_parse, req_id_unique, ambiguity_lint, story_format, gwt_pattern, nfr_measurable]
+deliverables:
+  - id: requirements_document
+    title: Requirements document
+    kind: [file, text]
+    accept: [.docx, .md]
+    required: true
+    sections:
+      - Business problem statement
+      - Stakeholders
+      - Functional requirements
+      - Non-functional requirements
+      - User stories
+      - Acceptance criteria
+    description: One document with these headings. Use IDs REQ-001, NFR-001 and US-001.
+  - id: process_flow
+    title: Process flow
+    kind: [file, link, text]
+    accept: [.png, .pdf]
+    required: true
+    description: A PNG or PDF export, a draw.io link, or Mermaid text
+criteria:
+  - {id: business_understanding, title: Business understanding, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: requirement_completeness, title: Requirement completeness, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: functional_requirement_clarity, title: Functional requirement clarity, weight: 20, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: non_functional_requirements, title: Non-functional requirements, weight: 15, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: user_story_quality, title: User story quality, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: acceptance_criteria, title: Acceptance criteria, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}
+  - {id: documentation_quality, title: Documentation quality, weight: 10, levels: {"0": TODO, "2": TODO, "4": TODO}, correction_template: TODO}

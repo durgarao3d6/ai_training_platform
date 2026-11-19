@@ -1,0 +1,23 @@
+[project]
+name = "aitms-worker"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "celery[redis]==5.4.0",
+  "kombu==5.4.2",
+  "structlog==24.4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.4", "ruff==0.8.4", "mypy==1.14.0"]
+
+[tool.setuptools.packages.find]
+include = ["worker*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"

@@ -1,0 +1,123 @@
+# Source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, sections 4 and 6.3. Drafts.
+# Test cases use the platform YAML template (decision in section 6.3) so the platform can run them.
+tasks:
+  - key: qa.requirement_understanding
+    module: qa.m1
+    title: Understand application and requirements
+    task_type: practical
+    depth: content
+    description: Review the application and requirements; list questions, assumptions and risks.
+    submits: Notes and question list
+    evaluated_on: Requirement understanding
+
+  - key: qa.test_scenarios
+    module: qa.m2
+    title: Identify test scenarios
+    task_type: practical
+    depth: content
+    description: Identify scenarios that cover the requirements, mapped to requirement IDs.
+    submits: Scenario list
+    evaluated_on: Scenario coverage
+
+  - key: qa.login_search
+    module: qa.m3
+    title: Test login and search
+    task_type: practical
+    depth: demo
+    description: >-
+      Write test cases for login and search in the platform's YAML template. The platform runs your
+      tests against the reference application, so a test only counts as run when the platform has
+      run it. Cover positive login, negative login, empty inputs, invalid credentials, document
+      search, unsupported document types, no-result responses and unauthorised access, with both UI
+      and API tests. Cite a requirement ID such as REQ-001 in every test case.
+    submits: >-
+      Test cases as one YAML file (at least 12), a test approach note (at least 60 words), and a
+      defect log as CSV or Markdown
+    evaluated_on: The QA login and search rubric, including tests the platform runs
+    starter_files: [qa.login_search/testcases-template.yaml]
+    # Draft manifest (Milestone Catalog 6.3, decision register section 2, AITMS-CONT-003).
+    # The execution report is produced by the platform and is not a deliverable.
+    deliverables:
+      - id: test_cases
+        title: Test cases
+        kind: file
+        accept: [.yaml, .yml]
+        min_items: 12
+        required: true
+        description: UI and API tests in the platform template, each citing a requirement ID
+      - id: approach_note
+        title: Test approach note
+        kind: text
+        min_words: 60
+        required: true
+        description: Scope, assumptions, and what was not tested
+      - id: defect_log
+        title: Defect log
+        kind: file
+        accept: [.csv, .md]
+        required: true
+        description: Columns id, title, steps, expected, actual, severity. May be empty only with a statement that no defect was found.
+
+  - key: qa.functional_testing
+    module: qa.m4
+    title: Execute functional testing
+    task_type: practical
+    depth: content
+    description: Run the test cases against the reference application and record actual results.
+    submits: Test cases for the platform to run, notes
+    evaluated_on: Expected against actual results
+
+  - key: qa.negative_testing
+    module: qa.m5
+    title: Perform negative testing
+    task_type: practical
+    depth: content
+    description: Design and run negative and edge-case tests.
+    submits: Negative test cases and results
+    evaluated_on: Edge-case coverage
+
+  - key: qa.api_testing
+    module: qa.m6
+    title: Conduct API testing
+    task_type: practical
+    depth: content
+    description: Test the portal's APIs for responses and validation.
+    submits: API test cases, results
+    evaluated_on: API response and validation
+
+  - key: qa.database_testing
+    module: qa.m7
+    title: Perform database testing
+    task_type: practical
+    depth: content
+    description: Check data integrity with SQL queries.
+    submits: SQL checks and results
+    evaluated_on: Data integrity
+
+  - key: qa.defect_reporting
+    module: qa.m8
+    title: Report and classify defects
+    task_type: practical
+    depth: content
+    description: Report defects with clear steps and classify their severity.
+    submits: Defect log
+    evaluated_on: Defect quality and severity
+
+  - key: qa.test_automation
+    module: qa.m9
+    title: Automate test cases
+    task_type: practical
+    depth: content
+    description: Automate selected test cases so they run reliably and repeatably.
+    submits: Automated tests, run report
+    evaluated_on: Automation reliability
+
+  - key: qa.regression_integration
+    module: qa.m10
+    title: Execute regression and integration testing
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Run regression and integration suites and report overall quality.
+    submits: Regression suite, test report
+    evaluated_on: End-to-end quality

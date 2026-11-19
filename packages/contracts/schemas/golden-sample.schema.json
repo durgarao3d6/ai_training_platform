@@ -1,0 +1,21 @@
+{
+  "title": "Golden sample, trainer-scored (validated as JSON Schema draft 2020-12 by app/content/validator.py)",
+  "type": "object",
+  "required": ["task", "label", "kind", "trainer_scores", "artifacts"],
+  "additionalProperties": false,
+  "properties": {
+    "task": {"type": "string", "minLength": 1},
+    "label": {"type": "string", "minLength": 1},
+    "kind": {"enum": ["good", "average", "poor", "adversarial"]},
+    "trainer_scores": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "integer", "minimum": 0, "maximum": 4}
+    },
+    "artifacts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "string"}
+    }
+  }
+}

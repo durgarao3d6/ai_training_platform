@@ -1,0 +1,137 @@
+/* =====================================================================
+   AITMS design tokens  ·  v0.3 "Soft depth"  ·  single source the frontend imports
+   Figma Variables mirror these names 1:1 (--color-accent = color/accent).
+   Rules for engineers and agents:
+   - Components use SEMANTIC tokens only (--color-*, --space-*, --text-*, --track-*).
+   - Never write a raw hex value in a component (a lint rule enforces this).
+   - Light theme only. Semantic naming keeps dark mode possible later.
+   Contrast ratios in comments were computed with the WCAG 2.x formula
+   (AA: 4.5:1 for text, 3:1 for UI boundaries and icons).
+   ===================================================================== */
+
+:root {
+  /* ---------- Color: surfaces ---------- */
+  --color-canvas:        #F6F5FB;  /* page background: soft lavender-grey */
+  --color-surface:       #FFFFFF;  /* floating cards, panels, inputs */
+  --color-sunken:        #EEEDF5;  /* wells, table header, segmented controls */
+  --color-border:        #E4E2EE;  /* decorative dividers only */
+  --color-border-strong: #8B89A6;  /* control boundaries: 3.37 on surface, 3.11 on canvas */
+
+  /* ---------- Color: text ---------- */
+  --color-ink:           #1B1A2E;  /* primary: 15.70 on canvas */
+  --color-ink-2:         #57557A;  /* secondary: 6.49 on canvas, 6.05 on sunken */
+  --color-ink-3:         #66647F;  /* tertiary: 5.68 surface, 5.24 canvas, 4.89 sunken */
+
+  /* ---------- Color: action ----------
+     Primary buttons and the active nav pill are solid ink (white on it: 17.02).
+     Violet is for links, focus and selected states. */
+  --color-action:        #1B1A2E;
+  --color-action-hover:  #34325A;
+  --color-on-action:     #FFFFFF;
+  --color-accent:        #4B3FB5;  /* 7.84 on surface, 7.24 on canvas */
+  --color-accent-hover:  #3A2F95;
+  --color-accent-tint:   #ECEAFE;  /* accent text on it: 6.64 */
+  --color-on-accent:     #FFFFFF;  /* 7.84 */
+
+  /* ---------- Color: tracks ----------
+     Each track has a pastel surface, two decorative blob tones and a readable ink.
+     Ink on surface ≥ 6.8; --color-ink on every track surface ≥ 12.9. */
+  --track-developer-bg:    #FFD9C7;  --track-developer-blob:  #FFB899;  --track-developer-blob-2:  #FFC6AE;  --track-developer-ink:  #6B3219;  /* 7.64 */
+  --track-ba-bg:           #CFF3E6;  --track-ba-blob:         #A8E6D0;  --track-ba-blob-2:         #BDEEDD;  --track-ba-ink:         #0E5A42;  /* 6.88 */
+  --track-qa-bg:           #E3E0FF;  --track-qa-blob:         #CBC5FF;  --track-qa-blob-2:         #D8D4FF;  --track-qa-ink:         #3A2F95;  /* 8.10 */
+  --track-uiux-bg:         #FFEFC2;  --track-uiux-blob:       #FFDF85;  --track-uiux-blob-2:       #FFE7A3;  --track-uiux-ink:       #6B4A00;  /* 7.06 */
+
+  /* ---------- Color: the evidence highlighter (used ONLY for quotes
+     taken from the intern's own submission) ---------- */
+  --color-evidence-bg:   #FFE680;
+  --color-evidence-ink:  #1B1A2E;
+
+  /* ---------- Color: status (always paired with text AND an icon shape) ---------- */
+  --color-success-bg:    #E1F0E6;  --color-success-text:   #1A6B3C;  /* 5.54; fill vs sunken 5.62 */
+  --color-attention-bg:  #FBEBC8;  --color-attention-text: #7A4A00;  /* 6.35  "Needs another pass" */
+  --color-review-bg:     #E4E9EF;  --color-review-text:    #38475A;  /* 7.76  "Trainer review pending" */
+  --color-error-bg:      #FBE4E1;  --color-error-text:     #A02626;  /* 6.17  system errors only */
+  --color-locked-bg:     #E8E8E2;  --color-locked-text:    #5A6068;  /* 5.16 */
+  /* Red is reserved for system errors. A weak submission is attention, never error. */
+
+  /* ---------- Typography: families by VOICE ----------
+     sans  = the interface (Plus Jakarta Sans: rounded, friendly geometry)
+     serif = human words (feedback, briefs, trainer notes)
+     mono  = verbatim text from a submission, and code
+     All self-hosted (@fontsource packages): no runtime font CDN. */
+  --font-sans:  'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-features-table: 'tnum' 1, 'lnum' 1;
+
+  /* ---------- Typography: scale (rem, 16px base; nothing below 12px) ---------- */
+  --text-xs:   0.75rem;   /* 12 */
+  --text-sm:   0.875rem;  /* 14 */
+  --text-base: 1rem;      /* 16 */
+  --text-prose:1.0625rem; /* 17  serif reading text */
+  --text-lg:   1.125rem;  /* 18 */
+  --text-xl:   1.375rem;  /* 22 */
+  --text-2xl:  2.125rem;  /* 34  page titles */
+  --text-3xl:  2.5rem;    /* 40  hero task title */
+
+  --leading-ui:    1.5;
+  --leading-table: 1.43;
+  --leading-prose: 1.6;
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:700;
+  --weight-bold:    800;
+  --measure-prose:  68ch;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
+  --space-4: 1rem;     --space-5: 1.5rem;   --space-6: 2rem;
+  --space-7: 3rem;     --space-8: 4rem;
+
+  /* ---------- Shape: big, soft radii ---------- */
+  --radius-sm:   12px;   /* inputs, buttons, chips' container */
+  --radius-md:   24px;   /* floating cards and panels */
+  --radius-lg:   30px;   /* the hero card */
+  --radius-full: 999px;  /* pills, avatars, step numbers */
+  --border-width: 1px;
+
+  /* ---------- Elevation: soft floating depth ---------- */
+  --shadow-card:    0 10px 30px rgba(40, 30, 90, 0.06);
+  --shadow-raised:  0 14px 40px rgba(40, 30, 90, 0.10);
+  --shadow-overlay: 0 24px 60px rgba(27, 26, 46, 0.22), 0 2px 8px rgba(27, 26, 46, 0.08);
+  --color-backdrop: rgba(27, 26, 46, 0.40);
+
+  /* ---------- Focus (keyboard) ---------- */
+  --focus-ring:   3px solid var(--color-accent);
+  --focus-offset: 2px;
+
+  /* ---------- Motion: only answers to a person's action ---------- */
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---------- Layout ---------- */
+  --nav-width: 248px;
+  --content-max: 1360px;
+  /* Breakpoints: sm 640px · md 1024px · lg 1280px. */
+
+  /* ---------- Table density: default ---------- */
+  --row-h: 48px;
+  --cell-px: 14px;
+  --cell-py: 10px;
+  --table-text: var(--text-sm);
+}
+
+[data-density='compact']     { --row-h: 36px; --cell-px: 12px; --cell-py: 6px;  --table-text: var(--text-sm); }
+[data-density='default']     { --row-h: 48px; --cell-px: 14px; --cell-py: 10px; --table-text: var(--text-sm); }
+[data-density='comfortable'] { --row-h: 56px; --cell-px: 18px; --cell-py: 14px; --table-text: var(--text-base); }
+
+/* Track theming: set data-track on any element to get its palette as --t-* variables. */
+[data-track='developer'] { --t-bg: var(--track-developer-bg); --t-blob: var(--track-developer-blob); --t-blob-2: var(--track-developer-blob-2); --t-ink: var(--track-developer-ink); }
+[data-track='ba']        { --t-bg: var(--track-ba-bg);        --t-blob: var(--track-ba-blob);        --t-blob-2: var(--track-ba-blob-2);        --t-ink: var(--track-ba-ink); }
+[data-track='qa']        { --t-bg: var(--track-qa-bg);        --t-blob: var(--track-qa-blob);        --t-blob-2: var(--track-qa-blob-2);        --t-ink: var(--track-qa-ink); }
+[data-track='uiux']      { --t-bg: var(--track-uiux-bg);      --t-blob: var(--track-uiux-blob);      --t-blob-2: var(--track-uiux-blob-2);      --t-ink: var(--track-uiux-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-fast: 0.01ms; --duration-base: 0.01ms; }
+}

@@ -1,0 +1,14 @@
+.git
+.kiro
+.env
+.env.*
+!.env.example
+**/node_modules
+**/.next
+**/__pycache__
+**/.venv
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+**/coverage
+docs

@@ -1,0 +1,126 @@
+/* AI authoring surfaces. Tokens only. AI text gets its own treatment so it is never mistaken for
+   a trainer's words or for an intern's evidence (that colour is reserved). */
+
+.aiLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  background: var(--color-accent-tint);
+  border-radius: var(--radius-full);
+}
+
+.proposal {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proposalItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.proposalItem:has(input:checked) {
+  border-style: solid;
+  border-color: var(--color-accent);
+  background: var(--color-accent-tint);
+}
+
+.proposalTitle {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+.proposalText {
+  margin: var(--space-1) 0 0;
+  color: var(--color-ink-2);
+}
+
+.subList {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+  color: var(--color-ink-2);
+}
+
+.diff {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.diffOld,
+.diffNew {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+}
+
+.diffOld {
+  color: var(--color-attention-text);
+  background: var(--color-attention-bg);
+  text-decoration: line-through;
+}
+
+.diffNew {
+  color: var(--color-ink);
+  background: var(--color-review-bg);
+}
+
+.meta {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+}
+
+.toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.components {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.component {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.componentTitle {
+  flex: 1 1 14rem;
+  font-weight: var(--weight-semibold);
+}
+
+.textarea {
+  min-height: 12rem;
+  font-family: var(--font-mono);
+}
+
+.sectionTitle {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-lg);
+}

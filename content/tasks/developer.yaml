@@ -1,0 +1,129 @@
+# Source: Milestone Catalog and Demo Task Deliverables, 8 Nov 2026, sections 2 and 6.1. Drafts.
+# The demo task's rubric is linked once level descriptors are approved (content/drafts/rubrics/).
+tasks:
+  - key: dev.rag_fundamentals
+    module: dev.m1
+    title: Understand RAG architecture
+    task_type: practical
+    depth: content
+    description: Explain how retrieval-augmented generation works and where each part fits in the Smart Knowledge Portal.
+    submits: Short written explanation and a component sketch
+    evaluated_on: Conceptual assessment
+
+  - key: dev.document_loader
+    module: dev.m2
+    title: Build document loader
+    task_type: practical
+    depth: content
+    description: Build a loader that extracts text and basic metadata from the portal's approved document types.
+    submits: Loader code, tests, sample outputs
+    evaluated_on: Extraction accuracy on a held-out document set
+
+  - key: dev.chunking
+    module: dev.m3
+    title: Implement chunking
+    task_type: practical
+    depth: demo
+    # Interface: decision register item 7 (proposed, pending Developer expert sign-off).
+    description: >-
+      Implement chunk_text in the starter file chunker.py. Split a text into ordered chunks of at
+      most chunk_size characters, where adjacent chunks share overlap characters. Each chunk keeps
+      its index (from 0), its start and end character positions in the original text, and the
+      metadata it was given. Return an empty list for empty input, and raise ValueError when
+      chunk_size is not positive or overlap is negative or not smaller than chunk_size. No character
+      of the original text may be lost. You may add helper functions, but keep the names and
+      signatures of Chunk and chunk_text, because hidden tests call them.
+    submits: Chunking code, unit tests, a sample input with its output, and a written explanation
+    evaluated_on: Chunk size, overlap and metadata handling
+    starter_files: [dev.chunking/chunker.py]
+    # Draft manifest (Milestone Catalog 6.1, AITMS-CONT-003).
+    deliverables:
+      - id: code
+        title: Chunking code
+        kind: file
+        accept: [.py]
+        required: true
+        description: Your chunker.py, implementing the starter interface
+      - id: tests
+        title: Unit tests
+        kind: file
+        accept: [.py]
+        min_items: 3
+        required: true
+        description: Pytest tests; at least three are collected
+      - id: sample_io
+        title: Sample input and output
+        kind: file
+        accept: [.md, .txt, .json]
+        required: true
+        description: One input and the chunks your code produced from it
+      - id: explanation
+        title: Explanation
+        kind: text
+        min_words: 80
+        required: true
+        description: How your chunking works and the choices you made
+
+  - key: dev.embeddings
+    module: dev.m4
+    title: Generate embeddings
+    task_type: practical
+    depth: content
+    description: Generate embeddings for chunks and check that similar text lands close together.
+    submits: Code, tests, short analysis of similar and unrelated pairs
+    evaluated_on: Dimensions and semantic quality
+
+  - key: dev.vector_database
+    module: dev.m5
+    title: Integrate vector database
+    task_type: practical
+    depth: content
+    description: Store and index embeddings in PostgreSQL with pgvector.
+    submits: Schema or migration, indexing code, tests
+    evaluated_on: Storage and indexing
+
+  - key: dev.retrieval
+    module: dev.m6
+    title: Implement retrieval
+    task_type: practical
+    depth: content
+    description: Retrieve the most relevant chunks for a question and measure how well it works.
+    submits: Retrieval code, evaluation script, results
+    evaluated_on: Precision and recall on a golden question set
+
+  - key: dev.prompt_construction
+    module: dev.m7
+    title: Develop prompt construction
+    task_type: practical
+    depth: content
+    description: Build prompts that ground the answer in retrieved text and decline when the text lacks an answer.
+    submits: Prompt templates, tests, explanation
+    evaluated_on: Context grounding
+
+  - key: dev.llm_integration
+    module: dev.m8
+    title: Integrate LLM
+    task_type: practical
+    depth: content
+    description: Call the language model and return an answer with source references.
+    submits: Code, tests, example questions and answers
+    evaluated_on: Response correctness
+
+  - key: dev.component_integration
+    module: dev.m9
+    title: Integrate all components
+    task_type: practical
+    depth: content
+    description: Connect loader, chunker, embedder, database, retriever and model into one pipeline.
+    submits: Integrated code, integration tests
+    evaluated_on: End-to-end integration tests
+
+  - key: dev.final_application
+    module: dev.m10
+    title: Build and demonstrate application
+    task_type: practical
+    depth: content
+    requires_review: true
+    description: Run and demonstrate the complete application on the portal's documents.
+    submits: Working app, test report, walkthrough, final explanation
+    evaluated_on: Final practical evaluation

@@ -1,0 +1,327 @@
+# Implementation Plan
+
+Updated 8 Nov 2026 for product owner decisions: no sample data (FR-SMP withdrawn), content authored in the application (ADR-012), and the Soft depth UI (tokens v0.3). No checkbox below is ticked: nothing has been built to the standard of its gate or tested yet. Notes marked "Implemented in code, not yet verified" mean the repository already contains code for the item and it has not been run against its acceptance criteria.
+
+Phases follow the Implementation Plan document. Each phase ends with a gate: demo the exit criterion, review open questions, update ADRs. Tasks marked "Human review" must be reviewed by a person (auth, RBAC, sandbox, scoring, migrations, prompts, rubrics).
+
+- [ ] 1. Phase 0: Foundations
+  - [ ] 1.1 Scaffold monorepo layout
+    - Create layout from design (apps/web, apps/api, apps/worker, services/*, packages/contracts, content, infra, docs/adr)
+    - Add `AGENTS.md` (hard rules from Implementation Plan 7.2), `.env.example`, `.dockerignore` per build context
+    - _Requirements: 20.1_
+  - [ ] 1.1a Write Dockerfiles
+    - Multi-stage (dev and prod targets), pinned base images, non-root user for api, worker, web, sandbox-runner, reference-app
+    - `tools.Dockerfile` with ruff, mypy, eslint, tsc, import-linter, content validator, OpenAPI client generator
+    - Each image builds from a clean checkout
+    - _Requirements: 20.4, 20.4a_
+  - [ ] 1.1b Write Compose files
+    - `compose.yml` with web, api, worker, postgres (pgvector), redis, s3 (RustFS, ADR-011), sandbox-runner and reference-app stubs, healthchecks, `depends_on: service_healthy`, named volumes, internal networks for sandbox and reference app
+    - `compose.dev.yml` (bind mounts, hot reload) and `compose.test.yml` (ephemeral db, fixture LLM mode)
+    - Docker socket mounted only into sandbox-runner
+    - _Requirements: 20.4, 20.4c, 20.4d_
+  - [ ] 1.1c Add containerised developer commands
+    - Makefile and `scripts/dev.ps1` wrappers: up, down, test, lint, migrate, seed, content-validate, client, a11y, reset
+    - README section "Run everything with Docker only"
+    - Verify on a host with only Docker installed: `docker compose up --build` gives all services healthy
+    - _Requirements: 20.4, 20.4b, 20.4c, 20.4e_
+  - [ ] 1.2 Set up CI
+    - Lint, type checks, unit tests, secret scan, migration check, import-linter for module boundaries
+    - Run through the same Compose files and images used locally
+    - _Requirements: 20.1, 20.4f_
+  - [ ] 1.3 Database schema v1 and Alembic baseline
+    - All tables from design with timestamps and UUID keys. No `is_sample` column (removed 8 Nov 2026)
+    - Trigger preventing updates to published rubric versions
+    - Human review (second engineer)
+    - _Requirements: 3.3, 4.1_
+  - [ ] 1.4 OpenAPI skeleton and generated TypeScript client
+    - Problem+json error model, pagination, Idempotency-Key header
+    - _Requirements: 20.5_
+  - [ ] 1.5 JSON schemas and content validator
+    - Schemas for rubric version, task template, golden sample
+    - `content validate` command enforcing weights sum, level descriptors, registered checkers, correction templates
+    - Unit tests with valid and invalid fixtures
+    - _Requirements: 3.2, 3.5_
+  - [ ] 1.6 Write ADRs 001 to 010
+    - Decide ADR-007 (Celery or Arq)
+    - _Requirements: 20.5_
+  - [ ] 1.7 Phase 0 gate
+    - `docker compose up --build` gives a healthy stack on a Docker-only host and CI is green
+    - `make test` and `make lint` pass inside containers
+
+- [ ] 2. Phase 1: Identity and application shells
+  - [ ] 2.1 Implement authentication
+    - Login, refresh, logout, `GET /me`, Argon2, httpOnly refresh cookie, CSRF, rate limiting and lockout
+    - Human review (tech lead)
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+  - [ ] 2.2 Implement permission layer and row-level security
+    - `require_permission` dependency, RLS policies on cohort and intern identifiers, session variable setup
+    - Human review (tech lead)
+    - _Requirements: 2.1_
+  - [ ] 2.3 Write permission matrix tests
+    - Parameterised test over every route and role for allowed and denied
+    - _Requirements: 2.2, 2.3, 2.4, 2.5, 2.6_
+  - [ ] 2.4 Build design tokens and three app shells
+    - Import `aitms-tokens.css` (v0.3), self-host fonts (Plus Jakarta Sans, Source Serif 4, IBM Plex Mono), route groups for intern, trainer, admin/HR, role-specific navigation
+    - Lint rule rejecting raw colour values
+    - _Requirements: 20.7_
+  - [ ] 2.5 Phase 1 gate
+    - Four demo roles log in, cross-role access returns 403, tests prove it
+
+- [ ] 3. Phase 2: Catalog and seed
+  - [ ] 3.1 Build catalog read APIs and one-time content import
+    - Courses, modules, task instances; `python -m app.content.cli import` creates missing records from `content/` validated against schemas and never overwrites edits made in the app
+    - Implemented in code, not yet verified
+    - _Requirements: 3.1, 3.2, 3.6_
+  - [ ] 3.2 Draft content for 4 tracks and 38 milestones
+    - 4 role profiles (in code), 4 courses, 38 milestones; 4 Demo_Task rubrics with weights from PRD Appendix A; 34 content-only tasks, drafted as YAML in `content/` for the one-time import or authored directly in the app (task 13)
+    - Level descriptors written with role experts
+    - Human review (role expert and tech lead)
+    - _Requirements: 3.7_
+  - [ ] 3.3 Implement idempotent bootstrap (`python -m app.seed.bootstrap`)
+    - Seeds only seven user accounts (one intern per track, a trainer, HR, an admin), the four role profiles and the storage bucket. Password from DEMO_PASSWORD (12+ characters)
+    - No courses, cohorts, enrollments, progress, scores, findings, evidence, decisions or evaluation runs. No `is_sample`
+    - Test: running the bootstrap twice changes nothing
+    - Implemented in code, not yet verified
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [ ] 3.4 Build designed empty states for a fresh platform
+    - Replaces the withdrawn SampleRibbon and SampleTag. Every list and card shows what is missing and a next step; text-based, readable without colour
+    - _Requirements: 4.5, 5.9_
+  - [ ] 3.5 Build intern home, My courses, course map page and task page
+    - Hero card, CourseCard per enrolled course with a status, MilestoneTrail with unlock reasons on a map page per course, rubric in plain language, empty states
+    - Axe checks and keyboard test
+    - Screens exist in the repository, not yet verified
+    - _Requirements: 5.1, 5.2, 5.3, 5.8, 5.9_
+  - [ ] 3.6 Phase 2 gate
+    - Bootstrap idempotent, admin can author a course and enroll an intern, intern sees My courses, a course map and the task page, empty states show on a fresh platform, and no sample labelling or sample data exists anywhere
+
+- [ ] 4. Phase 3: Submissions
+  - [ ] 4.1 Implement signed uploads and artifact records
+    - Type and size limits, SHA-256, storage key
+    - Human review (second engineer)
+    - _Requirements: 6.1, 6.2_
+  - [ ] 4.2 Implement submission attempts
+    - Attempt versioning, immutable earlier attempts, idempotency key, validation, 202 response, outbox enqueue
+    - Tests for happy path, duplicate key, empty file, disallowed type, unreachable link
+    - _Requirements: 6.3, 6.4, 6.5, 6.6, 6.7, 6.8_
+  - [ ] 4.3 Build submission UI and history
+    - Uploader for files, links and text; attempt history
+    - _Requirements: 5.4_
+  - [ ] 4.4 Phase 3 gate
+    - Intern submits files, links and text, resubmits, sees attempts 1, 2, 3
+
+- [ ] 5. Phase 4a: Evaluation engine core
+  - [ ] 5.1 Implement Scoring_Service
+    - Pure function: caps, weights, gates, threshold
+    - Exhaustive unit tests plus Hypothesis property tests
+    - Human review (tech lead)
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.8_
+  - [ ] 5.2 Implement review gate function
+    - All seven conditions, each with a test
+    - _Requirements: 8.6, 8.7_
+  - [ ] 5.3 Implement evaluation state machine
+    - Persisted idempotent stages keyed by run, stage and input hash; retry and NEEDS_HUMAN; resume after crash; SSE via Redis
+    - Test: kill worker mid-run and resume
+    - Human review (tech lead)
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.8_
+  - [ ] 5.4 Implement plugin registry and role isolation test
+    - Resolve checkers and prompts by role profile only
+    - _Requirements: 7.5, 7.7_
+  - [ ] 5.5 Implement LLM_Gateway
+    - Retries, timeouts, content-hash cache, cost and latency log, live and fixture modes, schema-validated output with one retry
+    - Human review (tech lead)
+    - _Requirements: 7.6, 7.9, 9.1, 9.2, 9.3, 9.4, 9.9_
+  - [ ] 5.6 Implement evidence verification and injection flagging
+    - Whitespace-normalised substring check; instruction-like text detector; delimited data blocks
+    - Human review (tech lead)
+    - _Requirements: 9.5, 9.6_
+  - [ ] 5.7 Implement prompt versioning and leak check
+    - Prompt files with content hash; leak heuristic and regeneration
+    - _Requirements: 9.7, 9.8_
+  - [ ] 5.8 Build EvaluationResult component and StageProgress
+    - CriterionBar, EvidenceQuote with highlight, SourceLabel, ReviewBadge, keyboard and contrast checks
+    - Microcopy module with wording rules tested
+    - _Requirements: 5.5, 5.6, 14.1, 14.2, 14.4, 14.6, 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9_
+
+- [ ] 6. Phase 4b: Developer chunking task
+  - [ ] 6.1 Build Sandbox_Runner MVP
+    - Internal authenticated API; container per run; no network, non-root, read-only image, limits; destroy after run
+    - Human review (tech lead and platform engineer)
+    - _Requirements: 10.4, 10.5, 10.6_
+  - [ ] 6.2 Write sandbox security test suite
+    - Escape, network, fork bomb, memory, time, large output
+    - _Requirements: 10.7_
+  - [ ] 6.3 Implement Developer checkers
+    - pytest visible and hidden, coverage, ruff, mypy, edge-case injection; hidden tests never exposed; overlap cap
+    - _Requirements: 10.1, 10.2, 10.3_
+  - [ ] 6.4 Author Developer judge prompt, golden set and correction templates
+    - 8 to 12 trainer-scored golden samples; leak check on templates
+    - Human review (role expert and tech lead)
+    - _Requirements: 9.8, 14.3_
+  - [ ] 6.5 Wire Developer end-to-end with fixtures
+    - Submit, evaluate, show result; verify under 3 minutes at p90
+    - _Requirements: 10.8_
+
+- [ ] 7. Phase 4c: BA and QA tasks (parallel)
+  - [ ] 7.1 Implement BA checkers
+    - Document parsing (.docx, .md, text), requirement ID uniqueness, ambiguity lint, story format, Given/When/Then, NFR measurability
+    - _Requirements: 11.1, 11.2_
+  - [ ] 7.2 Author BA judge prompt, golden set and correction templates
+    - Feedback names gaps via questions and never rewrites requirements
+    - Human review (role expert and tech lead)
+    - _Requirements: 11.3, 11.4_
+  - [ ] 7.3 Build Reference_App with defect catalogue
+    - Login and search, defect profiles, reset endpoint, isolated network
+    - _Requirements: 12.3, 12.6_
+  - [ ] 7.4 Define QA test-case template and implement parser
+    - YAML is the canonical format with the fixed action vocabulary (decision register section 2); template in `content/starters/qa.login_search/`
+    - Parse into executable Playwright or API actions; a step outside the vocabulary is rejected with a clear message
+    - The execution report is produced by the platform, never uploaded by the intern
+    - _Requirements: 12.1_
+  - [ ] 7.5 Implement QA checkers
+    - Run tests against Reference_App in sandbox, detection rate, defect replay, scenario coverage
+    - Test: written expected results do not count as execution
+    - _Requirements: 12.2, 12.4, 12.5_
+  - [ ] 7.6 Author QA judge prompt, golden set and correction templates
+    - Human review (role expert and tech lead)
+    - _Requirements: 14.3_
+
+- [ ] 8. Phase 4d: UX homepage wireframe task
+  - [ ] 8.1 Implement Figma extraction and metric checkers
+    - Read-only Figma client, contrast, text size, tap target, frame-to-requirement tag mapping
+    - _Requirements: 13.1, 13.2_
+  - [ ] 8.2 Implement advisory vision judge
+    - Findings labelled advisory; review always required
+    - _Requirements: 13.3, 13.4_
+  - [ ] 8.3 Author UX prompt, golden set and correction templates
+    - Human review (role expert and tech lead)
+    - _Requirements: 14.3_
+  - [ ] 8.4 Phase 4 gate
+    - One task per role evaluated end to end with real checkers, fixtures replay, golden-set agreement reported against 80% target or gap documented, sandbox security suite green
+
+- [ ] 9. Phase 5: Unlocking and corrections
+  - [ ] 9.1 Implement feedback structure and correction tasks
+    - Ordered feedback; correction from templates; "Needs another pass" wording
+    - _Requirements: 14.1, 14.2, 14.3_
+  - [ ] 9.2 Build correction task panel
+    - One correction at a time; previous attempt note
+    - _Requirements: 14.5_
+  - [ ] 9.3 Implement review decisions and audit log
+    - Approve, request revision, override with required reason, audit entry
+    - Human review (tech lead)
+    - _Requirements: 16.3, 16.4_
+  - [ ] 9.4 Build trainer queue and review pane
+    - DataTable with density modes, risk sort, flag reasons, side-by-side evidence, context card, keyboard shortcuts
+    - _Requirements: 16.1, 16.2, 16.5, 16.6, 16.7, 16.8_
+  - [ ] 9.5 Implement progression and competency updates
+    - Unlock only on approval; competency from approved results only
+    - _Requirements: 17.1, 17.2_
+  - [ ] 9.6 Implement Ask my trainer messaging
+    - _Requirements: 5.7_
+  - [ ] 9.7 Phase 5 gate
+    - For each Demo_Task: fail, correction, resubmit, approve with trainer decision where required
+    - _Requirements: 17.3_
+
+- [ ] 10. Phase 6: Traceability and integration
+  - [ ] 10.1 Implement tag parser and graph tables
+    - Parse REQ, TC, frame-name tags into edges with origin = tag
+    - _Requirements: 18.2, 18.3_
+  - [ ] 10.2 Implement shared project and approved outputs
+    - _Requirements: 18.1_
+  - [ ] 10.3 Implement BA to QA coverage query and link-quality judgment
+    - Graph query for coverage; AI judges quality only
+    - _Requirements: 18.4, 18.5_
+  - [ ] 10.4 Build CoverageMatrix component
+    - _Requirements: 18.4_
+
+- [ ] 11. Phase 7: HR dashboard
+  - [ ] 11.1 Implement cohort management
+    - Create cohort, enroll interns, assign tracks; see task 14 for the admin API and screens
+    - _Requirements: 19.1, 23.1_
+  - [ ] 11.2 Build cohort overview and attention views
+    - Status with reasons, history, needs-another-pass list, skills needing attention, dependency view
+    - _Requirements: 19.2, 19.3, 19.4_
+  - [ ] 11.3 Implement readiness card
+    - Three-state label with five inputs and sources; same card visible to interns
+    - Parameters pending product owner confirmation
+    - _Requirements: 19.5, 19.7_
+  - [ ] 11.4 Separate measured and AI results and trace every number
+    - _Requirements: 19.6, 19.8_
+
+- [ ] 12. Phase 8: Demo hardening
+  - [ ] 12.1 Implement reset to an empty platform plus seeded accounts
+    - A documented command wipes platform data and recreates the seeded accounts and role profiles. No sample content is restored
+    - _Requirements: 4.4, 4.5, 20.4e_
+  - [ ] 12.2 Record LLM fixtures from real outputs
+    - Reviewed by hand; fallback test with LLM disabled
+    - _Requirements: 21.2, 21.3_
+  - [ ] 12.2a Withdrawn (8 Nov 2026): demo history generation
+    - No sample evaluation history and no `generate_demo_history` command. Evaluation records come only from the real pipeline run on real submissions (supersedes tech lead decision 6)
+  - [ ] 12.3 Script the 10-minute demo and run nightly in CI
+    - The script starts from a reset, then authors or imports the demo course content, enrolls the demo interns, and submits real work
+    - _Requirements: 21.1, 21.5_
+  - [ ] 12.4 Add observability
+    - Traces per run; metrics for latency, cost, override rate, review-flag rate, evidence failure rate, queue depth
+    - _Requirements: 20.3_
+  - [ ] 12.5 Accessibility, security and performance passes
+    - Axe plus keyboard pass; p90 under 1 second on demo dataset; verify 100% evidence quotes present
+    - _Requirements: 20.2, 20.6, 21.4_
+  - [ ] 12.6 Final gate
+    - Three consecutive clean rehearsals from reset (empty platform plus seeded accounts); usability sessions with 6 to 8 participants
+    - _Requirements: 21.1_
+
+- [ ] 13. Phase 9: In-app catalog authoring (ADR-012)
+  - [ ] 13.1 Implement admin catalog API
+    - Under /api/v1/admin with permission catalog.manage: role-profiles; courses (list, create, get, patch, delete); courses/{id}/modules; courses/{id}/module-order; modules/{id} (patch, delete); modules/{id}/tasks; tasks/{id} (patch, delete)
+    - Admin module is an application-service layer and owns no tables
+    - Tests for happy path, validation failure and denied roles on every endpoint
+    - Implemented in code, not yet verified
+    - _Requirements: 22.1, 22.4, 22.6_
+  - [ ] 13.2 Implement rubric draft and publish lifecycle
+    - PUT tasks/{id}/rubric-draft, POST tasks/{id}/rubric-draft/publish; schema validation on publish; published rubric frozen, versioned and hashed; publishing audited
+    - Human review (tech lead and role expert)
+    - Implemented in code, not yet verified
+    - _Requirements: 22.2, 22.3, 3.3_
+  - [ ] 13.3 Sync enrolled interns when milestones or tasks are added
+    - Test: adding a milestone to a course creates progress and task instances for enrolled interns
+    - Implemented in code, not yet verified
+    - _Requirements: 22.5_
+  - [ ] 13.4 Build the admin course editor
+    - Course, milestone and task tree; deliverable manifest; rubric editor with draft, publish and frozen versions
+    - Screens exist in the repository (admin/courses), not yet verified
+    - Axe checks and keyboard test
+    - _Requirements: 22.1, 22.2, 15.9_
+  - [ ] 13.5 Test the one-time import never overwrites
+    - Edit a record in the app, run `python -m app.content.cli import`, assert the edit remains and missing records are created
+    - _Requirements: 3.6_
+
+- [ ] 14. Phase 9: Cohorts, enrollments and accounts
+  - [ ] 14.1 Implement cohort and enrollment API
+    - Permission cohort.manage (HR, admin): cohorts (list, create, get, patch); cohorts/{id}/enrollments
+    - An intern can be enrolled in several courses; enrolling creates milestone progress and task instances
+    - Implemented in code, not yet verified
+    - _Requirements: 23.1, 23.2, 23.3_
+  - [ ] 14.2 Implement user admin API
+    - users (list by role, create); HR can create interns only, admin any role
+    - Tests for allowed and denied roles
+    - Implemented in code, not yet verified
+    - _Requirements: 23.4, 23.5_
+  - [ ] 14.3 Build cohort, enrollment and people screens
+    - Screens exist in the repository (admin/cohorts, admin/people), not yet verified
+    - Axe checks and keyboard test
+    - _Requirements: 23.1, 23.4_
+
+- [ ] 15. Phase 9: Soft depth redesign (tokens v0.3)
+  - [ ] 15.1 Adopt tokens v0.3
+    - `apps/web/app/tokens.css` identical to `docs/aitms-tokens.css`; no raw colour values in components
+    - Implemented in code, not yet verified
+    - _Requirements: 24.1, 20.7_
+  - [ ] 15.2 Rebuild the shell and shared components
+    - Floating sidebar with ink active pill, floating cards, ink primary buttons, violet links and focus, track colours beside track names, StatusChip with text and icon, CourseCard, StatTile
+    - Implemented in code, not yet verified
+    - _Requirements: 24.2, 24.3, 24.5_
+  - [ ] 15.3 Self-host the three font families
+    - Plus Jakarta Sans, Source Serif 4, IBM Plex Mono through @fontsource; no runtime font CDN
+    - _Requirements: 24.4_
+  - [ ] 15.4 Verify contrast, keyboard and reduced motion
+    - Automated axe checks and a manual keyboard pass over every screen; check that the computed ratios in the token comments match rendered colours
+    - _Requirements: 24.5, 15.9, 20.6_
