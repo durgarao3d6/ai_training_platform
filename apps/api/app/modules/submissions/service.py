@@ -28,9 +28,13 @@ from app.core.errors import ProblemError
 from app.core.links import check_link
 from app.db.outbox import enqueue
 from app.modules.catalog import service as catalog
+from app.modules.catalog.models import RubricVersion, TaskTemplate
 from app.modules.catalog.schemas import kinds_of
 from app.modules.delivery.models import Enrollment, TaskInstance, TaskInstanceStatus
+from app.modules.evaluation.models import EvaluationRun, RunState
 from app.modules.identity.deps import Principal
+from app.modules.review.models import Decision, ReviewDecision
+from app.modules.review.schemas import ReviewResult
 from app.modules.submissions.models import Artifact, ArtifactKind, Submission, SubmissionStatus
 from app.modules.submissions.schemas import (
     ArtifactIn,
@@ -289,6 +293,30 @@ def _submission_out(db: Session, submission: Submission) -> SubmissionOut:
         .where(Artifact.submission_id == submission.id)
         .order_by(Artifact.deliverable_id, Artifact.created_at)
     ).all()
+    run = db.scalar(
+        select(EvaluationRun)
+        .where(EvaluationRun.submission_id == submission.id)
+        .order_by(EvaluationRun.created_at.desc(), EvaluationRun.id.desc())
+        .limit(1)
+    )
+    review = None
+    if run is not None:
+        record = db.scalar(
+            select(ReviewDecision)
+            .where(
+                ReviewDecision.run_id == run.id,
+                ReviewDecision.decision.in_([Decision.approve, Decision.request_revision]),
+            )
+            .order_by(ReviewDecision.created_at.desc(), ReviewDecision.id.desc())
+            .limit(1)
+        )
+        if record is not None:
+            review = ReviewResult(
+                decision="approve" if record.decision == Decision.approve else "request_revision",
+                reason=record.reason or "",
+                decided_at=record.created_at,
+                rubric_version_id=run.rubric_version_id,
+            )
     return SubmissionOut(
         id=submission.id,
         task_instance_id=submission.task_instance_id,
@@ -296,6 +324,8 @@ def _submission_out(db: Session, submission: Submission) -> SubmissionOut:
         status=submission.status.value,
         created_at=submission.created_at,
         artifacts=[_artifact_out(a) for a in artifacts],
+        evaluation_id=run.id if run else None,
+        review=review,
     )
 
 
@@ -343,7 +373,21 @@ def create_submission(
         for artifact in artifacts:
             artifact.submission_id = submission.id
             db.add(artifact)
-        if instance.status is not TaskInstanceStatus.in_progress:
+        rubric = db.scalar(
+            select(RubricVersion)
+            .join(TaskTemplate, TaskTemplate.rubric_version_id == RubricVersion.id)
+            .where(TaskTemplate.id == instance.task_template_id, RubricVersion.published)
+        )
+        if rubric is not None:
+            db.add(
+                EvaluationRun(
+                    submission_id=submission.id,
+                    rubric_version_id=rubric.id,
+                    state=RunState.human_review,
+                )
+            )
+            instance.status = TaskInstanceStatus.review_pending
+        else:
             instance.status = TaskInstanceStatus.in_progress
         enqueue(db, "submission.created", {"submission_id": str(submission.id)})
         db.flush()

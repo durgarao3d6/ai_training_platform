@@ -6,6 +6,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.modules.review.schemas import ReviewResult
+
 
 class UploadSignIn(BaseModel):
     task_instance_id: uuid.UUID
@@ -63,7 +65,8 @@ class SubmissionOut(BaseModel):
     status: str
     created_at: datetime
     artifacts: list[ArtifactOut]
-    evaluation_id: uuid.UUID | None = None  # set once the evaluation engine exists (Phase 4)
+    evaluation_id: uuid.UUID | None = None
+    review: ReviewResult | None = None
 
 
 class SubmissionSummaryOut(BaseModel):
