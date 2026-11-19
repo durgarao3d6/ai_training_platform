@@ -17,8 +17,8 @@ test:
 	$(TOOLS) sh -c "cd apps/api && python -m pytest -q"
 
 test-integration:
-	docker compose $(TEST) up -d --wait s3
-	$(TOOLS) sh -c "cd apps/api && RUN_INTEGRATION=1 python -m pytest -q tests/integration"
+	docker compose $(TEST) up -d --wait postgres s3
+	$(TOOLS) sh -c "cd apps/api && alembic upgrade head && RUN_INTEGRATION=1 python -m pytest -q"
 
 lint:
 	$(TOOLS) sh -c "ruff check apps services && ruff format --check apps services && cd apps/api && mypy app tests"
@@ -37,7 +37,9 @@ client:
 	$(TOOLS) sh -c "cd apps/api && python -m app.api.export_openapi && openapi-typescript /work/packages/contracts/openapi.json -o /work/packages/contracts/client/schema.d.ts && cp /work/packages/contracts/client/schema.d.ts /work/apps/web/lib/api-schema.d.ts"
 
 a11y:
-	@echo "Not implemented yet: task 2.4 onwards (Playwright + axe)"; exit 1
+	docker compose $(TEST) up --build -d --wait api web
+	$(TOOLS) sh -c "cd apps/api && alembic upgrade head && python -m app.seed.bootstrap && PYTHONPATH=. python tests/browser_fixture.py"
+	docker compose $(TEST) --profile browser run --rm --no-deps browser
 
 reset:
 	docker compose $(DEV) down -v

@@ -6,7 +6,6 @@ services:
     volumes: !override
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
   api:
-    build: {target: dev}
     environment:
       LLM_MODE: fixture
   worker:
@@ -28,4 +27,19 @@ services:
     environment:
       LLM_MODE: fixture
       S3_ENDPOINT: http://s3:9000
+      CONTRACTS_DIR: /work/packages/contracts
     networks: [backend]  # reaches s3 and postgres for integration tests
+
+  browser:
+    image: mcr.microsoft.com/playwright:v1.55.1-noble
+    profiles: [browser]
+    working_dir: /browser
+    volumes:
+      - ../apps/web:/source:ro
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      WEB_BASE_URL: http://web:3000
+    command: ["sh", "-ec", "cp -R /source/. . && npm ci --no-audit --no-fund && npx playwright test e2e/review.spec.ts --workers=1"]
+    networks: [backend]

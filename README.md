@@ -24,7 +24,7 @@ With `make` available, use `make up`, `make test`, `make lint` and so on.
 
 `.env` is created from `.env.example` on first `up`. Never commit `.env`.
 
-Run `make client` (or `./scripts/dev.ps1 client`) to export the API schema and regenerate the TypeScript declarations. The `a11y` command is planned.
+Run `make client` (or `./scripts/dev.ps1 client`) to export the API schema and regenerate the TypeScript declarations. Run `make a11y` or `./scripts/dev.ps1 a11y` in a disposable project to exercise the trainer review flow in Chromium and run accessibility checks.
 
 ## First start
 
@@ -64,6 +64,8 @@ Everything else is created in the application:
 - Enrolling an intern creates their milestone progress and task instances.
 
 Optional one-time import: the drafted YAML in `content/` can be brought in once with `python -m app.content.cli import` (run it in the api container). It only creates missing records and never overwrites edits made in the app. `./scripts/dev.ps1 content-validate` checks the YAML without importing it.
+
+See [the BA demo walkthrough](docs/ba-demo.md) and [pilot release checks](docs/pilot-release.md).
 
 ## Layout
 
