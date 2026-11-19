@@ -13,6 +13,9 @@ import pytest
 
 from app.core import storage
 from app.core.config import get_settings
+from app.modules.delivery.models import TaskInstance
+from app.modules.submissions.schemas import ArtifactIn
+from app.modules.submissions.service import _validate
 
 pytestmark = pytest.mark.skipif(os.environ.get("RUN_INTEGRATION") != "1", reason="integration test")
 
@@ -109,3 +112,28 @@ def test_presigned_upload_cannot_write_another_key() -> None:
     assert response.status_code >= 400
     with pytest.raises(storage.ObjectMissing):
         storage.inspect(other)
+
+
+def test_finalized_submission_keeps_original_bytes() -> None:
+    instance = TaskInstance(id=uuid.uuid4())
+    key = f"submissions/{instance.id}/{uuid.uuid4()}/notes.md"
+    assert _post(key, PAYLOAD).status_code in {200, 201, 204}
+
+    finalized_keys: list[str] = []
+    artifacts = _validate(
+        instance,
+        {"notes": {"kind": "file", "accept": [".md"]}},
+        [ArtifactIn(deliverable_id="notes", kind="file", upload_key=key)],
+        get_settings(),
+        finalized_keys,
+    )
+    artifact = artifacts[0]
+    assert artifact.storage_key == finalized_keys[0]
+    assert artifact.storage_key != key
+    assert artifact.sha256 == hashlib.sha256(PAYLOAD).hexdigest()
+    assert artifact.filename == "notes.md"
+
+    replacement = b"Revised notes"
+    assert _post(key, replacement).status_code in {200, 201, 204}
+    assert b"".join(storage.stream(key)) == replacement
+    assert b"".join(storage.stream(finalized_keys[0])) == PAYLOAD
