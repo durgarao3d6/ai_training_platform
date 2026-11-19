@@ -313,3 +313,8 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 6;
 }
+
+.reviewFeedback {
+  padding-block: 0.75rem;
+  overflow-wrap: anywhere;
+}

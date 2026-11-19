@@ -1,3 +1,5 @@
+import type { components } from "./api-schema";
+
 // Response shapes from the API. Replaced by the generated OpenAPI client in task 1.4.
 
 export type RoleProfileKey = "developer" | "ba" | "qa" | "uiux";
@@ -118,6 +120,7 @@ export interface SubmissionView {
   created_at: string;
   artifacts: ArtifactView[];
   evaluation_id: string | null;
+  review?: components["schemas"]["ReviewResult"] | null;
 }
 
 export interface SubmissionSummary {
