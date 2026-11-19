@@ -25,11 +25,6 @@ function Invoke-Tools([string]$Script) {
     Invoke-Compose @test --profile tools run --rm --no-deps tools sh -c $Script
 }
 
-function Not-Implemented([string]$Task) {
-    Write-Error "Not implemented yet: $Task"
-    exit 1
-}
-
 switch ($Command) {
     'up' {
         if (-not (Test-Path .env)) { Copy-Item .env.example .env }
@@ -38,8 +33,8 @@ switch ($Command) {
     'down' { Invoke-Compose @dev down }
     'test' { Invoke-Tools 'cd apps/api && python -m pytest -q' }
     'test-integration' {
-        Invoke-Compose @test up -d --wait s3
-        Invoke-Tools 'cd apps/api && RUN_INTEGRATION=1 python -m pytest -q tests/integration'
+        Invoke-Compose @test up -d --wait postgres s3
+        Invoke-Tools 'cd apps/api && alembic upgrade head && RUN_INTEGRATION=1 python -m pytest -q'
     }
     'lint' {
         Invoke-Tools 'ruff check apps services && ruff format --check apps services && cd apps/api && mypy app tests'
@@ -51,7 +46,11 @@ switch ($Command) {
     'client' {
         Invoke-Tools 'cd apps/api && python -m app.api.export_openapi && openapi-typescript /work/packages/contracts/openapi.json -o /work/packages/contracts/client/schema.d.ts && cp /work/packages/contracts/client/schema.d.ts /work/apps/web/lib/api-schema.d.ts'
     }
-    'a11y' { Not-Implemented 'task 2.4 onwards (Playwright + axe)' }
+    'a11y' {
+        Invoke-Compose @test up --build -d --wait api web
+        Invoke-Tools 'cd apps/api && alembic upgrade head && python -m app.seed.bootstrap && PYTHONPATH=. python tests/browser_fixture.py'
+        Invoke-Compose @test --profile browser run --rm --no-deps browser
+    }
     'reset' {
         Invoke-Compose @dev down -v
         if (-not (Test-Path .env)) { Copy-Item .env.example .env }

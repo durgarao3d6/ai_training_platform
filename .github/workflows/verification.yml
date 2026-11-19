@@ -1,0 +1,33 @@
+name: Verification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure the disposable stack
+        run: |
+          cp .env.example .env
+          printf '\nDEMO_PASSWORD=%s\n' "$(openssl rand -hex 16)" >> .env
+      - name: Lint and type check
+        run: make lint
+      - name: Check API contract drift
+        run: |
+          make client
+          git diff --exit-code -- packages/contracts/openapi.json apps/web/lib/api-schema.d.ts
+      - name: Run API and integration tests
+        run: make test-integration
+      - name: Run browser review workflow and accessibility checks
+        run: make a11y
+      - name: Stop the disposable stack
+        if: always()
+        run: docker compose --env-file .env -f infra/compose.yml -f infra/compose.test.yml down -v

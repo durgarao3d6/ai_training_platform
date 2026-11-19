@@ -169,7 +169,7 @@ def decide(
     row = db.execute(
         _assigned_work(principal)
         .where(Submission.id == submission_id)
-        .with_for_update(of=(Cohort, Enrollment))
+        .with_for_update(of=[Cohort.id, Enrollment.id])
     ).one_or_none()
     if row is None:
         raise ProblemError(404, "Submission not found")
