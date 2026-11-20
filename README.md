@@ -2,9 +2,38 @@
 
 Multi-role intern training platform (Developer, BA, QA, UI/UX). Specs live in `docs/` and `.kiro/specs/aitms-prototype/`.
 
+## Clone and run locally with Docker
+
+Install Git and start Docker Desktop, or use Docker Engine with the Docker Compose v2 plugin. Run the commands from your terminal. The app and its dependencies run in containers.
+
+1. Clone the repository and enter its directory.
+
+   ```sh
+   git clone https://github.com/durgarao3d6/ai_training_platform.git
+   cd ai_training_platform
+   ```
+
+2. Create a local configuration with `cp .env.example .env` in Bash or `Copy-Item .env.example .env` in PowerShell. Open `.env` and set `DEMO_PASSWORD` to a local-only password of at least 12 characters. The default fixture mode works without an OpenAI API key. Keep `.env` out of Git.
+
+3. Build and start the web app and its dependencies, apply the database migrations, and create the bootstrap accounts and storage bucket.
+
+   ```sh
+   docker compose --env-file .env -f infra/compose.yml up --build -d --wait web
+   docker compose --env-file .env -f infra/compose.yml run --rm --no-deps api alembic upgrade head
+   docker compose --env-file .env -f infra/compose.yml run --rm --no-deps api python -m app.seed.bootstrap
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) and sign in as `admin@example.com` with the password you set. The catalog starts empty. To try the workflow, create and publish a course, assign a trainer to a cohort, and enroll one of the [seeded interns](#seeded-accounts).
+
+To stop the stack while keeping database and uploaded files, run:
+
+```sh
+docker compose --env-file .env -f infra/compose.yml down
+```
+
 ## Run everything with Docker only
 
-The host needs only Docker Desktop. No Python, Node or database is installed locally.
+The development helpers below start the stack with hot reload and run project checks inside Docker.
 
 ```powershell
 ./scripts/dev.ps1 up      # build and start all services (dev mode, hot reload), waits until healthy
@@ -25,19 +54,6 @@ With `make` available, use `make up`, `make test`, `make lint` and so on.
 `.env` is created from `.env.example` on first `up`. Never commit `.env`.
 
 Run `make client` (or `./scripts/dev.ps1 client`) to export the API schema and regenerate the TypeScript declarations. Run `make a11y` or `./scripts/dev.ps1 a11y` in a disposable project to exercise the trainer review flow in Chromium and run accessibility checks.
-
-## First start
-
-1. Set `DEMO_PASSWORD` in `.env` (at least 12 characters). It is the password for every seeded account.
-2. Start and prepare the platform:
-
-```powershell
-./scripts/dev.ps1 up        # start all services
-./scripts/dev.ps1 migrate   # alembic upgrade head
-./scripts/dev.ps1 seed      # bootstrap: accounts, role profiles, storage bucket
-```
-
-Running `seed` twice changes nothing. All of the above is implemented in code and not yet verified end to end.
 
 ### Seeded accounts
 
